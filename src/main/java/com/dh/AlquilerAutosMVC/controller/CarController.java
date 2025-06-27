@@ -2,6 +2,7 @@ package com.dh.AlquilerAutosMVC.controller;
 
 import com.dh.AlquilerAutosMVC.entity.Car;
 import com.dh.AlquilerAutosMVC.service.ICarService;
+import org.hibernate.engine.jdbc.env.spi.IdentifierCaseStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -71,10 +72,26 @@ public class CarController {
         return ResponseEntity.ok(iCarService.findAll());
     }
 
-    /*
-    @GetMapping("/marca/{carBrand}")
-    public List<Car> findByCarBrand(@PathVariable String carBrand) {
-        return carServiceImpl.findByCarBrand(carBrand);
-    }*/
 
+    @GetMapping("/marca/{carBrand}")
+    public ResponseEntity<List<Car>> findByCarBrand(@PathVariable String carBrand) throws Exception {
+        List<Car> carList = iCarService.findByCarBrand(carBrand);
+
+        if (carList != null) {
+            return ResponseEntity.ok(carList);
+        } else {
+            throw new Exception("No se encontró autos con la marca: " + carBrand);
+        }
+
+    }
+
+    @GetMapping("/nombre")
+    public ResponseEntity<List<Car>> findByName(@RequestParam String name) throws Exception {
+        List<Car> carList = iCarService.findByName(name);
+
+        if (carList.isEmpty()) {
+            throw new Exception("No se escontró un auto con el nombre: " + name);
+        }
+        return ResponseEntity.ok(carList);
+    }
 }

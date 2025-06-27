@@ -1,5 +1,7 @@
 package com.dh.AlquilerAutosMVC.controller;
 
+import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
+import com.dh.AlquilerAutosMVC.entity.Car;
 import com.dh.AlquilerAutosMVC.entity.CarReservation;
 import com.dh.AlquilerAutosMVC.service.ICarReservationService;
 import com.dh.AlquilerAutosMVC.service.ICarService;
@@ -27,16 +29,26 @@ public class CarReservationController {
         this.iUserService = iUserService;
     }
 
+    // TODO: AGREGAR
+    //  - por qué no se podría guardar el turno
+    //     . ej: si el auto no está disponible en esa fecha
+    //       hay que chequear en getCarReservations
+    /*
+    Optional<Car> car = iCarService.findById(carReservationDTO.getCar_id());
+    car.get().getCarReservations()
+    // Preguntar si tiene reservas esos días
+    */
     @PostMapping
-    public ResponseEntity<CarReservation> save(@RequestBody CarReservation carReservation) {
-        ResponseEntity<CarReservation> response;
+    public ResponseEntity<CarReservationDTO> save(@RequestBody CarReservationDTO carReservationDTO) {
+        ResponseEntity<CarReservationDTO> response;
 
         // Chequeamos que existan el auto y el usuario
-        if (iCarService.findById(carReservation.getCar().getId()).isPresent()
-                && iUserService.findById(carReservation.getUser().getId()).isPresent()) {
+        if (iCarService.findById(carReservationDTO.getCar_id()).isPresent()
+                && iUserService.findById(carReservationDTO.getUser_id()).isPresent()) {
+
 
             // Seteamos al ResponseEntity con el 200 OK
-            response = ResponseEntity.ok(iCarReservationService.save(carReservation));
+            response = ResponseEntity.ok(iCarReservationService.save(carReservationDTO));
         } else {
 
             //Seteamos al ResponseEntity el 400 bad request
@@ -47,36 +59,36 @@ public class CarReservationController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<CarReservation> findById(@PathVariable Long id) {
-        Optional<CarReservation> carReservationToLookFor = iCarReservationService.findById(id);
+    public ResponseEntity<CarReservationDTO> findById(@PathVariable Long id) {
+        Optional<CarReservationDTO> carReservationDTOToLookFor = iCarReservationService.findById(id);
 
-        if (carReservationToLookFor.isPresent()) {
-            return ResponseEntity.ok(carReservationToLookFor.get());
+        if (carReservationDTOToLookFor.isPresent()) {
+            return ResponseEntity.ok(carReservationDTOToLookFor.get());
         } else {
             return  ResponseEntity.notFound().build();
         }
     }
 
     // TODO: AGREGAR
-    //  filtros de porque no se podría actualizar
+    //  filtros de por qué no se podría actualizar
     //  - si cambia fecha (chequear si el auto está disponible)
 
     @PutMapping
-    public ResponseEntity<String> update(@RequestBody CarReservation carReservation) {
-        ResponseEntity<String> response;
+    public ResponseEntity<CarReservationDTO> update(@RequestBody CarReservationDTO carReservationDTO) throws Exception {
+        ResponseEntity<CarReservationDTO> response;
 
-        if(iCarService.findById(carReservation.getCar().getId()).isPresent()
-                && iUserService.findById(carReservation.getUser().getId()).isPresent()) {
-            iCarReservationService.update(carReservation);
-            response = ResponseEntity.ok("Se actualizó la reserva con id: " + carReservation.getId());
+        if(iCarService.findById(carReservationDTO.getCar_id()).isPresent()
+                && iUserService.findById(carReservationDTO.getUser_id()).isPresent()) {
+
+            response = ResponseEntity.ok(iCarReservationService.update(carReservationDTO));
         } else {
-            response = ResponseEntity.badRequest().body("No se pudo actualizar la reserva");
+            response = ResponseEntity.badRequest().build();
         }
         return response;
     }
 
     // TODO: AGREGAR
-    //  filtros de porque no se podría eliminar
+    //  filtros de por qué no se podría eliminar
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
@@ -93,7 +105,7 @@ public class CarReservationController {
 
     // Endpoint consulto todas las reservas
     @GetMapping
-    public ResponseEntity<List<CarReservation>> findAll() {
+    public ResponseEntity<List<CarReservationDTO>> findAll() {
         return ResponseEntity.ok(iCarReservationService.findAll());
     }
 

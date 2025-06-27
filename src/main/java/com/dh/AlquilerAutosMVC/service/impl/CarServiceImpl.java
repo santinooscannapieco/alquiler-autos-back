@@ -45,8 +45,19 @@ public class CarServiceImpl implements ICarService {
         return carRepository.findAll();
     }
 
+    @Override
+    public List<Car> findByCarBrand(String carBrand) {
+        return carRepository.findByCarBrand(carBrand);
+    }
+
+    @Override
+    public List<Car> findByName(String name) throws Exception {
+        return carRepository.findByName(name);
+    }
+
+
     // TODO: AGREGAR
-    //  - Buscar por CarBrand (Traer lista de autos)
+    //  - (LISTO)Buscar por CarBrand (Traer lista de autos)
     //  - Buscar por nombre de auto (POSIBLE: Autocompletar lo q va escribiendo)
     //  - Buscar por precio por hora (Traer lista de autos)
 

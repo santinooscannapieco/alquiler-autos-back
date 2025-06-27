@@ -12,4 +12,6 @@ public interface ICarService {
     void update(Car car);
     void delete(Long id);
     List<Car> findAll();
+    List<Car> findByCarBrand(String carBrand) throws Exception;
+    List<Car> findByName(String name) throws Exception;
 }
