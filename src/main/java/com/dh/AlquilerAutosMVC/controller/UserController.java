@@ -1,6 +1,7 @@
 package com.dh.AlquilerAutosMVC.controller;
 
 import com.dh.AlquilerAutosMVC.entity.User;
+import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -51,22 +52,16 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        ResponseEntity<String> response;
-
-        if (iUserService.findById(id).isPresent()) {
-            iUserService.delete(id);
-            response = ResponseEntity.ok("Se eliminó el auto con id: " + id);
-        } else {
-            response = ResponseEntity.ok().body("No se puede eliminar un auto que no existe dentro de la BD");
-        }
-        return response;
+    public ResponseEntity<String> delete(@PathVariable Long id) throws ResourceNotFoundException {
+        iUserService.delete(id);
+        return ResponseEntity.ok("Se eliminó el usuario con id: " + id);
     }
 
     @GetMapping
     public ResponseEntity<List<User>> findAll() {
         return ResponseEntity.ok(iUserService.findAll());
     }
+
 
 
 

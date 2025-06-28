@@ -1,6 +1,7 @@
 package com.dh.AlquilerAutosMVC.controller;
 
 import com.dh.AlquilerAutosMVC.entity.Car;
+import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.service.ICarService;
 import org.hibernate.engine.jdbc.env.spi.IdentifierCaseStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,16 +56,9 @@ public class CarController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        ResponseEntity<String> response;
-
-        if (iCarService.findById(id).isPresent()) {
-            iCarService.delete(id);
-            response = ResponseEntity.ok("Se eliminó el auto con id: " + id);
-        } else {
-            response = ResponseEntity.ok().body("No se puede eliminar un auto que no existe dentro de la BD");
-        }
-        return response;
+    public ResponseEntity<String> delete(@PathVariable Long id) throws ResourceNotFoundException {
+        iCarService.delete(id);
+        return ResponseEntity.ok("Se eliminó el auto con id: " + id);
     }
 
     @GetMapping

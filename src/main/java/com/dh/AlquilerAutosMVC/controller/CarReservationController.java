@@ -3,6 +3,7 @@ package com.dh.AlquilerAutosMVC.controller;
 import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
 import com.dh.AlquilerAutosMVC.entity.Car;
 import com.dh.AlquilerAutosMVC.entity.CarReservation;
+import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.service.ICarReservationService;
 import com.dh.AlquilerAutosMVC.service.ICarService;
 import com.dh.AlquilerAutosMVC.service.IUserService;
@@ -59,14 +60,10 @@ public class CarReservationController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<CarReservationDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<CarReservationDTO> findById(@PathVariable Long id) throws ResourceNotFoundException {
         Optional<CarReservationDTO> carReservationDTOToLookFor = iCarReservationService.findById(id);
 
-        if (carReservationDTOToLookFor.isPresent()) {
-            return ResponseEntity.ok(carReservationDTOToLookFor.get());
-        } else {
-            return  ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(carReservationDTOToLookFor.get());
     }
 
     // TODO: AGREGAR
@@ -91,16 +88,9 @@ public class CarReservationController {
     //  filtros de por qué no se podría eliminar
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        ResponseEntity<String> response;
-
-        if (iCarReservationService.findById(id).isPresent()) {
-            iCarReservationService.delete(id);
-            response = ResponseEntity.ok("Se eliminó la reserva con id: " + id);
-        } else {
-            response = ResponseEntity.ok().body("No se pudo eliminar la reserva");
-        }
-        return response;
+    public ResponseEntity<String> delete(@PathVariable Long id) throws ResourceNotFoundException {
+        iCarReservationService.delete(id);
+        return ResponseEntity.ok("Se eliminó la reserva con id: " + id);
     }
 
     // Endpoint consulto todas las reservas

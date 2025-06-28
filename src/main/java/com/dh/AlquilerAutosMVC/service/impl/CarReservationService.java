@@ -3,6 +3,7 @@ package com.dh.AlquilerAutosMVC.service.impl;
 import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
 import com.dh.AlquilerAutosMVC.entity.Car;
 import com.dh.AlquilerAutosMVC.entity.User;
+import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.repository.ICarReservationRepository;
 import com.dh.AlquilerAutosMVC.entity.CarReservation;
 import com.dh.AlquilerAutosMVC.service.ICarReservationService;
@@ -70,7 +71,7 @@ public class CarReservationService implements ICarReservationService {
     }
 
     @Override
-    public Optional<CarReservationDTO> findById(Long id) {
+    public Optional<CarReservationDTO> findById(Long id) throws ResourceNotFoundException {
         Optional<CarReservation> carReservationToLookFor = carReservationRepository.findById(id);
         // Instancio un dto
         Optional<CarReservationDTO> carReservationDTO = null;
@@ -88,9 +89,12 @@ public class CarReservationService implements ICarReservationService {
             carReservationDTOToReturn.setRentalEnd(carReservation.getRentalEnd().toString());
 
             carReservationDTO = Optional.of(carReservationDTOToReturn);
+            return carReservationDTO;
+        } else {
+            throw new ResourceNotFoundException("No se encontró la reserva con id: "+ id);
         }
 
-        return carReservationDTO;
+
     }
 
     @Override
@@ -133,13 +137,39 @@ public class CarReservationService implements ICarReservationService {
         } else {
             throw new Exception("No se pudo actualizar el turno");
         }
-
-
     }
 
     @Override
-    public void delete(Long id) {
-        carReservationRepository.deleteById(id);
+    public Optional<CarReservationDTO> delete(Long id) throws ResourceNotFoundException {
+        Optional<CarReservation> carReservationToLookFor = carReservationRepository.findById(id);
+
+        Optional<CarReservationDTO> carReservationDTO;
+
+        if (carReservationToLookFor.isPresent()) {
+            // Recupero la reserva y la guardo en una entidad reserva
+            CarReservation carReservation = carReservationToLookFor.get();
+            carReservationRepository.delete(carReservation);
+
+            // Vamos a devolver un dto
+            CarReservationDTO carReservationDTOToReturn = new CarReservationDTO();
+
+            carReservationDTOToReturn.setId(carReservation.getId());
+            carReservationDTOToReturn.setCar_id(carReservation.getCar().getId());
+            carReservationDTOToReturn.setUser_id(carReservation.getUser().getId());
+            carReservationDTOToReturn.setPickUp(carReservation.getPickUp());
+            carReservationDTOToReturn.setRentalStart(carReservation.getRentalStart().toString());
+            carReservationDTOToReturn.setRentalEnd(carReservation.getRentalEnd().toString());
+
+            carReservationDTO = Optional.of(carReservationDTOToReturn);
+
+            return carReservationDTO;
+        } else {
+            // Lanzar exception
+            throw new ResourceNotFoundException("No se encontró la reserva con id: " + id);
+        }
+
+
+
     }
 
     @Override

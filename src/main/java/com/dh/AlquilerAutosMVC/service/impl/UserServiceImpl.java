@@ -1,6 +1,7 @@
 package com.dh.AlquilerAutosMVC.service.impl;
 
 import com.dh.AlquilerAutosMVC.entity.User;
+import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.repository.IUserRepository;
 import com.dh.AlquilerAutosMVC.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,15 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(Long id) throws ResourceNotFoundException {
+        Optional<User> userToLookFor = userRepository.findById(id);
+
+        if (userToLookFor.isPresent()) {
+            userRepository.deleteById(id);
+        } else {
+            throw new ResourceNotFoundException("No se pudo eliminar el usuario con id: " + id);
+        }
+
         userRepository.deleteById(id);
     }
 

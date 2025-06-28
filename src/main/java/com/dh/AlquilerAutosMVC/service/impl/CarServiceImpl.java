@@ -1,5 +1,6 @@
 package com.dh.AlquilerAutosMVC.service.impl;
 
+import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.repository.ICarRepository;
 
 import com.dh.AlquilerAutosMVC.entity.Car;
@@ -36,8 +37,16 @@ public class CarServiceImpl implements ICarService {
     }
 
     @Override
-    public void delete(Long id) {
-        carRepository.deleteById(id);
+    public void delete(Long id) throws ResourceNotFoundException {
+        Optional<Car> carToLookFor = carRepository.findById(id);
+
+        if (carToLookFor.isPresent()) {
+            carRepository.deleteById(id);
+        } else {
+            throw new ResourceNotFoundException("No se elimino ya que no se encontró un auto con id: " + id);
+        }
+
+
     }
 
     @Override
