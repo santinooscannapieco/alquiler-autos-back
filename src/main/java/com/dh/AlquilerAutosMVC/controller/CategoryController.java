@@ -1,6 +1,9 @@
 package com.dh.AlquilerAutosMVC.controller;
 
+import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
+import com.dh.AlquilerAutosMVC.dto.CategoryDTO;
 import com.dh.AlquilerAutosMVC.entity.Category;
+import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.service.ICategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,19 +23,29 @@ public class CategoryController {
         this.iCategoryService = iCategoryService;
     }
 
+
+    // TODO: IMPLEMENTAR
+    //  categoryDTO
     @PostMapping
-    public ResponseEntity<Category> save(@RequestBody Category category) {
-        return ResponseEntity.ok(iCategoryService.save(category));
+    public ResponseEntity<CategoryDTO> save(@RequestBody CategoryDTO categoryDTO) throws ResourceNotFoundException {
+
+        return ResponseEntity.ok(iCategoryService.save(categoryDTO));
+        /*if (iCategoryService.findByName(categoryDTO.getName()).isPresent()) {
+            return ResponseEntity.ok(iCategoryService.save(categoryDTO));
+        } else {
+            throw new ResourceNotFoundException("No se puede guardar, ya existe una categoria con el nombre: " + categoryDTO.getName());
+        }*/
+
     }
 
     @PutMapping
-    public ResponseEntity<String> update(@RequestBody Category category) {
+    public ResponseEntity<String> update(@RequestBody CategoryDTO categoryDTO) throws ResourceNotFoundException {
         ResponseEntity<String> response;
-        Optional<Category> categoryToLookFor = iCategoryService.findById(category.getId());
+        Optional<Category> categoryToLookFor = iCategoryService.findById(categoryDTO.getId());
 
         if (categoryToLookFor.isPresent()) {
-            iCategoryService.update(category);
-            response = ResponseEntity.ok("Se actualizó la categoría con id: " + category.getId());
+            iCategoryService.update(categoryDTO);
+            response = ResponseEntity.ok("Se actualizó la categoría con id: " + categoryDTO.getId());
         } else {
             response = ResponseEntity.ok().body("No se puede actualizar una categoría que no existe dentro de la BD");
         }
@@ -40,28 +53,24 @@ public class CategoryController {
     }
 
     @DeleteMapping
-    public ResponseEntity<String> delete(@RequestParam Long id) {
-        ResponseEntity<String> response;
+    public ResponseEntity<String> delete(@RequestParam Long id) throws ResourceNotFoundException {
+        iCategoryService.delete(id);
+        return ResponseEntity.ok("Se eliminó con éxito la categoría con id: " + id);
 
-        if (iCategoryService.findById(id).isPresent()) {
-            iCategoryService.delete(id);
-            response = ResponseEntity.ok("Se eliminó la categoría con id: " + id);
-        } else {
-            response = ResponseEntity.ok().body("No se puede eliminar una categoría que no exist dentro dela BD");
-        }
-        return response;
     }
 
     @GetMapping
-    public List<Category> findAll() {
+    public List<CategoryDTO> findAll() {
         return iCategoryService.findAll();
     }
 
 
+    // TODO: CORREGIR
+    //  
+    @GetMapping("/nombre/{name}")
+    public ResponseEntity<CategoryDTO> findByName(@PathVariable String name) throws ResourceNotFoundException {
+        Optional<CategoryDTO> categoryToLookFor = iCategoryService.findByName(name);
 
-    /*
-    @GetMapping("/{name}")
-    public Category findByName(@PathVariable String name) {
-        return iCategoryService.findByName(name);
-    }*/
+        return ResponseEntity.ok(categoryToLookFor.get());
+    }
 }

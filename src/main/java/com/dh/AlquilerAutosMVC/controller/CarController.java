@@ -1,5 +1,6 @@
 package com.dh.AlquilerAutosMVC.controller;
 
+import com.dh.AlquilerAutosMVC.dto.CarDTO;
 import com.dh.AlquilerAutosMVC.entity.Car;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.service.ICarService;
@@ -24,16 +25,16 @@ public class CarController {
 
     // endpoint para agregar un auto
     @PostMapping
-    public ResponseEntity<Car> save(@RequestBody Car car) {
-        return ResponseEntity.ok(iCarService.save(car));
+    public ResponseEntity<CarDTO> save(@RequestBody CarDTO carDTO) throws IllegalAccessException {
+        return ResponseEntity.ok(iCarService.save(carDTO));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Car> findById(@PathVariable Long id) {
-        Optional<Car> car = iCarService.findById(id);
+    public ResponseEntity<CarDTO> findById(@PathVariable Long id) throws ResourceNotFoundException {
+        Optional<CarDTO> carDTO = iCarService.findById(id);
 
-        if (car.isPresent()) {
-            return ResponseEntity.ok(car.get());
+        if (carDTO.isPresent()) {
+            return ResponseEntity.ok(carDTO.get());
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -41,18 +42,10 @@ public class CarController {
 
     // endpoint que nos permita actualizar un auto ya existente
     @PutMapping
-    public ResponseEntity<String> update(@RequestBody Car car) {
+    public ResponseEntity<CarDTO> update(@RequestBody CarDTO carDTO) throws ResourceNotFoundException {
         ResponseEntity<String> response;
-        Optional<Car> carToLookFor = iCarService.findById(car.getId());
-
-        if (carToLookFor.isPresent()) {
-            iCarService.update(car);
-            response = ResponseEntity.ok("Se actualizó el auto con id: " + car.getId());
-        } else {
-            response = ResponseEntity.ok().body("No se puede actualizar un auto que no existe dentro de la BD");
-        }
-
-        return response;
+        CarDTO updated = iCarService.update(carDTO);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
@@ -62,14 +55,14 @@ public class CarController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Car>> findAll() {
+    public ResponseEntity<List<CarDTO>> findAll() {
         return ResponseEntity.ok(iCarService.findAll());
     }
 
 
     @GetMapping("/marca/{carBrand}")
-    public ResponseEntity<List<Car>> findByCarBrand(@PathVariable String carBrand) throws Exception {
-        List<Car> carList = iCarService.findByCarBrand(carBrand);
+    public ResponseEntity<List<CarDTO>> findByCarBrand(@PathVariable String carBrand) throws Exception {
+        List<CarDTO> carList = iCarService.findByCarBrand(carBrand);
 
         if (carList != null) {
             return ResponseEntity.ok(carList);
@@ -80,12 +73,14 @@ public class CarController {
     }
 
     @GetMapping("/nombre")
-    public ResponseEntity<List<Car>> findByName(@RequestParam String name) throws Exception {
-        List<Car> carList = iCarService.findByName(name);
+    public ResponseEntity<List<CarDTO>> findByName(@RequestParam String name) throws Exception {
+        List<CarDTO> carList = iCarService.findByName(name);
 
         if (carList.isEmpty()) {
             throw new Exception("No se escontró un auto con el nombre: " + name);
         }
         return ResponseEntity.ok(carList);
     }
+
+
 }

@@ -28,6 +28,23 @@ public class CarReservation {
     public CarReservation() {
     }
 
+    public CarReservation(Long id, Car car, User user, String pickUp, LocalDate rentalStart, LocalDate rentalEnd) {
+        this.id = id;
+        this.car = car;
+        this.user = user;
+        this.pickUp = pickUp;
+        this.rentalStart = rentalStart;
+        this.rentalEnd = rentalEnd;
+    }
+
+    public CarReservation(Car car, User user, String pickUp, LocalDate rentalStart, LocalDate rentalEnd) {
+        this.car = car;
+        this.user = user;
+        this.pickUp = pickUp;
+        this.rentalStart = rentalStart;
+        this.rentalEnd = rentalEnd;
+    }
+
     public Long getId() {
         return id;
     }

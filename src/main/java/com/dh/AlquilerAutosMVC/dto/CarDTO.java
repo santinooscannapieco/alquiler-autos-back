@@ -1,50 +1,41 @@
-package com.dh.AlquilerAutosMVC.entity;
-
-import jakarta.persistence.*;
+package com.dh.AlquilerAutosMVC.dto;
 
 import java.util.ArrayList;
 import java.util.List;
 
+public class CarDTO {
 
-@Entity
-@Table(name = "cars")
-public class Car {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "item_id")
     private Long id;
-    @Column(name = "name")
     private String name;
-    @Column(name = "description")
     private String description;
-    @Column(name = "img")
     private String image;
-    @Column(name = "card_brand")
     private String carBrand;
-    @Column(name = "price_per_hour")
     private Integer pricePerHour;
+    private Long category_id;
+    private List<DateRangeDTO> reservedDates = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
-
-    @OneToMany(mappedBy = "car")
-    private List<CarReservation> carReservations = new ArrayList<>();
-
-
-    public Car() {
+    public CarDTO() {
     }
 
-    public Car(Long id, String name, String description, String image, String carBrand, Integer pricePerHour, Category category, List<CarReservation> carReservations) {
+    public CarDTO(Long id, String name, String description, String image, String carBrand, Integer pricePerHour, Long category_id, List<DateRangeDTO> reservedDates) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.image = image;
         this.carBrand = carBrand;
         this.pricePerHour = pricePerHour;
-        this.category = category;
-        this.carReservations = carReservations;
+        this.category_id = category_id;
+        this.reservedDates = reservedDates;
+    }
+
+    public CarDTO(String name, String description, String image, String carBrand, Integer pricePerHour, Long category_id, List<DateRangeDTO> reservedDates) {
+        this.name = name;
+        this.description = description;
+        this.image = image;
+        this.carBrand = carBrand;
+        this.pricePerHour = pricePerHour;
+        this.category_id = category_id;
+        this.reservedDates = reservedDates;
     }
 
     public Long getId() {
@@ -95,19 +86,19 @@ public class Car {
         this.pricePerHour = pricePerHour;
     }
 
-    public Category getCategory() {
-        return category;
+    public Long getCategory_id() {
+        return category_id;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setCategory_id(Long category_id) {
+        this.category_id = category_id;
     }
 
-    public List<CarReservation> getCarReservations() {
-        return carReservations;
+    public List<DateRangeDTO> getReservedDates() {
+        return reservedDates;
     }
 
-    public void setCarReservations(List<CarReservation> carReservations) {
-        this.carReservations = carReservations;
+    public void setReservedDates(List<DateRangeDTO> reservedDates) {
+        this.reservedDates = reservedDates;
     }
 }

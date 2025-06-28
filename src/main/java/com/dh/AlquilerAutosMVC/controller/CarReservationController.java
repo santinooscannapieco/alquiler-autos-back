@@ -40,13 +40,12 @@ public class CarReservationController {
     // Preguntar si tiene reservas esos días
     */
     @PostMapping
-    public ResponseEntity<CarReservationDTO> save(@RequestBody CarReservationDTO carReservationDTO) {
+    public ResponseEntity<CarReservationDTO> save(@RequestBody CarReservationDTO carReservationDTO) throws ResourceNotFoundException {
         ResponseEntity<CarReservationDTO> response;
 
         // Chequeamos que existan el auto y el usuario
         if (iCarService.findById(carReservationDTO.getCar_id()).isPresent()
                 && iUserService.findById(carReservationDTO.getUser_id()).isPresent()) {
-
 
             // Seteamos al ResponseEntity con el 200 OK
             response = ResponseEntity.ok(iCarReservationService.save(carReservationDTO));
