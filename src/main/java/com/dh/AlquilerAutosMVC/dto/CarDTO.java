@@ -8,32 +8,35 @@ public class CarDTO {
     private Long id;
     private String name;
     private String description;
-    private String image;
+    private List<String> imagePaths;
     private String carBrand;
     private Integer pricePerHour;
+    private List<String> characteristics;
     private Long category_id;
     private List<DateRangeDTO> reservedDates = new ArrayList<>();
 
     public CarDTO() {
     }
 
-    public CarDTO(Long id, String name, String description, String image, String carBrand, Integer pricePerHour, Long category_id, List<DateRangeDTO> reservedDates) {
+    public CarDTO(Long id, String name, String description, List<String> imagePaths, String carBrand, Integer pricePerHour, List<String> characteristics, Long category_id, List<DateRangeDTO> reservedDates) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.image = image;
+        this.imagePaths = imagePaths;
         this.carBrand = carBrand;
         this.pricePerHour = pricePerHour;
+        this.characteristics = characteristics;
         this.category_id = category_id;
         this.reservedDates = reservedDates;
     }
 
-    public CarDTO(String name, String description, String image, String carBrand, Integer pricePerHour, Long category_id, List<DateRangeDTO> reservedDates) {
+    public CarDTO(String name, String description, List<String> imagePaths, String carBrand, Integer pricePerHour, List<String> characteristics, Long category_id, List<DateRangeDTO> reservedDates) {
         this.name = name;
         this.description = description;
-        this.image = image;
+        this.imagePaths = imagePaths;
         this.carBrand = carBrand;
         this.pricePerHour = pricePerHour;
+        this.characteristics = characteristics;
         this.category_id = category_id;
         this.reservedDates = reservedDates;
     }
@@ -62,12 +65,12 @@ public class CarDTO {
         this.description = description;
     }
 
-    public String getImage() {
-        return image;
+    public List<String> getImagePaths() {
+        return imagePaths;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setImagePaths(List<String> imagePaths) {
+        this.imagePaths = imagePaths;
     }
 
     public String getCarBrand() {
@@ -84,6 +87,14 @@ public class CarDTO {
 
     public void setPricePerHour(Integer pricePerHour) {
         this.pricePerHour = pricePerHour;
+    }
+
+    public List<String> getCharacteristics() {
+        return characteristics;
+    }
+
+    public void setCharacteristics(List<String> characteristics) {
+        this.characteristics = characteristics;
     }
 
     public Long getCategory_id() {

@@ -18,12 +18,15 @@ public class Car {
     private String name;
     @Column(name = "description")
     private String description;
-    @Column(name = "img")
-    private String image;
+    @ElementCollection
+    private List<String> imagePaths = new ArrayList<>();
     @Column(name = "card_brand")
     private String carBrand;
     @Column(name = "price_per_hour")
     private Integer pricePerHour;
+
+    @Column(name = "characteristics")
+    private List<String> characteristics;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -36,13 +39,14 @@ public class Car {
     public Car() {
     }
 
-    public Car(Long id, String name, String description, String image, String carBrand, Integer pricePerHour, Category category, List<CarReservation> carReservations) {
+    public Car(Long id, String name, String description, List<String> imagePaths, String carBrand, Integer pricePerHour, List<String> characteristics, Category category, List<CarReservation> carReservations) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.image = image;
+        this.imagePaths = imagePaths;
         this.carBrand = carBrand;
         this.pricePerHour = pricePerHour;
+        this.characteristics = characteristics;
         this.category = category;
         this.carReservations = carReservations;
     }
@@ -71,12 +75,12 @@ public class Car {
         this.description = description;
     }
 
-    public String getImage() {
-        return image;
+    public List<String> getImagePaths() {
+        return imagePaths;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setImagePaths(List<String> imagePaths) {
+        this.imagePaths = imagePaths;
     }
 
     public String getCarBrand() {
@@ -93,6 +97,14 @@ public class Car {
 
     public void setPricePerHour(Integer pricePerHour) {
         this.pricePerHour = pricePerHour;
+    }
+
+    public List<String> getCharacteristics() {
+        return characteristics;
+    }
+
+    public void setCharacteristics(List<String> characteristics) {
+        this.characteristics = characteristics;
     }
 
     public Category getCategory() {

@@ -45,9 +45,10 @@ public class CategoryService implements ICategoryService {
             // CUANDO AGREGUE EL CARDTO TENGO QUE MODIFICAR ESTO
             // Creo y agrego el auto con todos sus atributos
             Car carToAdd = new Car(car.get().getId(),car.get().getName(),
-                    car.get().getDescription(),car.get().getImage(),
+                    car.get().getDescription(),car.get().getImagePaths(),
                     car.get().getCarBrand(), car.get().getPricePerHour(),
-                    car.get().getCategory(),car.get().getCarReservations());
+                    car.get().getCharacteristics(), car.get().getCategory(),
+                    car.get().getCarReservations());
             carList.add(carToAdd);
         }
 
@@ -98,9 +99,10 @@ public class CategoryService implements ICategoryService {
                 // CUANDO AGREGUE EL CARDTO TENGO QUE MODIFICAR ESTO
                 // Creo y agrego el auto con todos sus atributos
                 Car carToAdd = new Car(car.get().getId(),car.get().getName(),
-                        car.get().getDescription(),car.get().getImage(),
+                        car.get().getDescription(),car.get().getImagePaths(),
                         car.get().getCarBrand(), car.get().getPricePerHour(),
-                        car.get().getCategory(),car.get().getCarReservations());
+                        car.get().getCharacteristics(), car.get().getCategory(),
+                        car.get().getCarReservations());
                 carList.add(carToAdd);
             }
             categoryEntity.get().setCars(carList);
