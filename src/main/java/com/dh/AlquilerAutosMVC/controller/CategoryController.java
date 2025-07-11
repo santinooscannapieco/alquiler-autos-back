@@ -23,25 +23,31 @@ public class CategoryController {
         this.iCategoryService = iCategoryService;
     }
 
-
-    // TODO: IMPLEMENTAR
-    //  categoryDTO
     @PostMapping
     public ResponseEntity<CategoryDTO> save(@RequestBody CategoryDTO categoryDTO) throws ResourceNotFoundException {
 
-        return ResponseEntity.ok(iCategoryService.save(categoryDTO));
-        /*if (iCategoryService.findByName(categoryDTO.getName()).isPresent()) {
+        if (iCategoryService.findByName(categoryDTO.getName()) == null) {
             return ResponseEntity.ok(iCategoryService.save(categoryDTO));
         } else {
-            throw new ResourceNotFoundException("No se puede guardar, ya existe una categoria con el nombre: " + categoryDTO.getName());
-        }*/
+            throw new ResourceNotFoundException("No se puede guardar, ya existe una categoría con el nombre: " + categoryDTO.getName());
+        }
+    }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoryDTO> findById(@PathVariable Long id) throws ResourceNotFoundException {
+        Optional<CategoryDTO> categoryDTO = iCategoryService.findById(id);
+
+        if (categoryDTO.isPresent()) {
+            return ResponseEntity.ok(categoryDTO.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping
     public ResponseEntity<String> update(@RequestBody CategoryDTO categoryDTO) throws ResourceNotFoundException {
         ResponseEntity<String> response;
-        Optional<Category> categoryToLookFor = iCategoryService.findById(categoryDTO.getId());
+        Optional<CategoryDTO> categoryToLookFor = iCategoryService.findById(categoryDTO.getId());
 
         if (categoryToLookFor.isPresent()) {
             iCategoryService.update(categoryDTO);
@@ -52,8 +58,8 @@ public class CategoryController {
         return response;
     }
 
-    @DeleteMapping
-    public ResponseEntity<String> delete(@RequestParam Long id) throws ResourceNotFoundException {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> delete(@PathVariable Long id) throws ResourceNotFoundException {
         iCategoryService.delete(id);
         return ResponseEntity.ok("Se eliminó con éxito la categoría con id: " + id);
 

@@ -1,6 +1,8 @@
 package com.dh.AlquilerAutosMVC.service.impl;
 
+import com.dh.AlquilerAutosMVC.dto.CarDTO;
 import com.dh.AlquilerAutosMVC.dto.CategoryDTO;
+import com.dh.AlquilerAutosMVC.dto.DateRangeDTO;
 import com.dh.AlquilerAutosMVC.entity.Car;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.repository.ICarRepository;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryService implements ICategoryService {
@@ -28,7 +31,17 @@ public class CategoryService implements ICategoryService {
         this.carRepository = carRepository;
     }
 
+    public CategoryDTO toDTO(Category category) {
+        CategoryDTO dto = new CategoryDTO();
+        dto.setId(category.getId());
+        dto.setName(category.getName());
+        List<Long> carIds = category.getCars().stream()
+                .map(Car::getId)
+                .collect(Collectors.toList());
 
+        dto.setCars_id(carIds);
+        return dto;
+    }
 
     @Override
     public CategoryDTO save(CategoryDTO categoryDTO) {
@@ -76,8 +89,11 @@ public class CategoryService implements ICategoryService {
     }
 
     @Override
-    public Optional<Category> findById(Long id) {
-        return categoryRepository.findById(id);
+    public Optional<CategoryDTO> findById(Long id) throws ResourceNotFoundException {
+
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Auto no encontrado"));
+        return Optional.of(toDTO(category));
     }
 
     @Override
@@ -128,16 +144,16 @@ public class CategoryService implements ICategoryService {
     }
 
     @Override
-    public void delete(Long id) throws ResourceNotFoundException {
+    public void delete(Long id) throws RuntimeException {
         Optional<Category> categoryToLookFor = categoryRepository.findById(id);
 
         if (!categoryToLookFor.isPresent()) {
             // Si no existe ninguna categoría con ese id
-            throw new ResourceNotFoundException("No se eliminó ya que no se encontró una categoría con el id: " + id);
+            throw new RuntimeException("No se eliminó ya que no se encontró una categoría con el id: " + id);
         }
         else if (!categoryToLookFor.get().getCars().isEmpty()) {
             // Si la categoría no está vacía
-            throw new ResourceNotFoundException("No se puede eliminar la categoría porque tiene " + categoryToLookFor.get().getCars().size() + " autos asocioados");
+            throw new RuntimeException("No se puede eliminar la categoría porque tiene " + categoryToLookFor.get().getCars().size() + " autos asocioados");
         }
 
         categoryRepository.deleteById(id);
@@ -145,7 +161,7 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public List<CategoryDTO> findAll() {
-        List<Category> categoryList = categoryRepository.findAll();
+        /* List<Category> categoryList = categoryRepository.findAll();
 
         List<CategoryDTO> categoryDTOS = new ArrayList<>();
 
@@ -158,9 +174,13 @@ public class CategoryService implements ICategoryService {
             }
 
             categoryDTOS.add(new CategoryDTO(category.getId(), category.getName(), cars_id_ToReturn));
-        }
+        }*/
 
-        return categoryDTOS;
+        return categoryRepository.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+
+        //return categoryDTOS;
     }
 
     // TODO: AGREGAR
@@ -186,9 +206,14 @@ public class CategoryService implements ICategoryService {
             categoryDTOToReturn.setCars_id(cars_id_ToReturn);
 
             categoryDTO = Optional.of(categoryDTOToReturn);
-            return categoryDTO;
-        } else {
-            throw new ResourceNotFoundException("No se encontró categoría con el nombre: " + name);
         }
+        return categoryDTO;
+
+
+
+
+        /*else {
+            throw new ResourceNotFoundException("No se encontró categoría con el nombre: " + name);
+        }*/
     }
 }
