@@ -14,5 +14,5 @@ public interface ICategoryService {
     CategoryDTO update(CategoryDTO categoryDTO) throws ResourceNotFoundException;
     void delete(Long id) throws ResourceNotFoundException;
     List<CategoryDTO> findAll();
-    Optional<CategoryDTO> findByName(String name)  throws ResourceNotFoundException;
+    Optional<CategoryDTO> findByName(String name) throws ResourceNotFoundException;
 }

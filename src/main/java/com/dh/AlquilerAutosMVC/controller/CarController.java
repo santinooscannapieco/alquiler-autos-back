@@ -28,19 +28,6 @@ public class CarController {
         this.iCarService = iCarService;
     }
 
-    @GetMapping("/ping")
-    public ResponseEntity<String> ping() {
-        System.out.println("🔥 PING recibido");
-        return ResponseEntity.ok("pong");
-    }
-
-    // endpoint para agregar un auto
-    /*
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<CarDTO> save(@RequestPart("car") CarDTO carDTO, @RequestPart(value = "images", required = false) MultipartFile[] images) {
-        return ResponseEntity.ok(iCarService.save(carDTO, images));
-    }*/
-
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CarDTO> save(
             @RequestPart("car") String carJson,

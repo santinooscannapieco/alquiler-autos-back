@@ -1,5 +1,6 @@
 package com.dh.AlquilerAutosMVC.controller;
 
+import com.dh.AlquilerAutosMVC.dto.UserDTO;
 import com.dh.AlquilerAutosMVC.entity.User;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.service.IUserService;
@@ -27,20 +28,21 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> findById(@PathVariable Long id) {
-        Optional<User> user = iUserService.findById(id);
+    public ResponseEntity<UserDTO> findById(@PathVariable Long id) throws ResourceNotFoundException {
+        Optional<UserDTO> userDTO = iUserService.findById(id);
 
-        if (user.isPresent()) {
-            return ResponseEntity.ok(user.get());
+        if (userDTO.isPresent()) {
+            return ResponseEntity.ok(userDTO.get());
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
+
     @PutMapping
-    public ResponseEntity<String> update(@RequestBody User user) {
+    public ResponseEntity<String> update(@RequestBody User user) throws ResourceNotFoundException {
         ResponseEntity<String> response;
-        Optional<User> userToLookFor = iUserService.findById(user.getId());
+        Optional<UserDTO> userToLookFor = iUserService.findById(user.getId());
 
         if (userToLookFor.isPresent()) {
             iUserService.update(user);
@@ -58,11 +60,21 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> findAll() {
+    public ResponseEntity<List<UserDTO>> findAll() {
         return ResponseEntity.ok(iUserService.findAll());
     }
 
+    @GetMapping("/email")
+    public ResponseEntity<UserDTO> findByEmail(@RequestParam String email) {
+        Optional<UserDTO> userDTO = iUserService.findByEmail(email);
 
+        if (userDTO.isPresent()) {
+            return ResponseEntity.ok(userDTO.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+
+    }
 
 
 }

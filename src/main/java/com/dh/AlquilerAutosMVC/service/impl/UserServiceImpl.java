@@ -1,14 +1,20 @@
 package com.dh.AlquilerAutosMVC.service.impl;
 
+import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
+import com.dh.AlquilerAutosMVC.dto.UserDTO;
+import com.dh.AlquilerAutosMVC.entity.Car;
 import com.dh.AlquilerAutosMVC.entity.User;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
+import com.dh.AlquilerAutosMVC.repository.ICarReservationRepository;
 import com.dh.AlquilerAutosMVC.repository.IUserRepository;
+import com.dh.AlquilerAutosMVC.service.ICarReservationService;
 import com.dh.AlquilerAutosMVC.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -26,8 +32,9 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
+    public Optional<UserDTO> findById(Long id) throws ResourceNotFoundException {
+        return userRepository.findById(id)
+                .map(User::toDTO);
     }
 
     @Override
@@ -49,8 +56,16 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<UserDTO> findAll() {
+        return userRepository.findAll().stream()
+                .map(User::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<UserDTO> findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(User::toDTO);
     }
 
     // TODO: AGREGAR

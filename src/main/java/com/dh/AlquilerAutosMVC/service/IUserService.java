@@ -1,5 +1,6 @@
 package com.dh.AlquilerAutosMVC.service;
 
+import com.dh.AlquilerAutosMVC.dto.UserDTO;
 import com.dh.AlquilerAutosMVC.entity.User;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 
@@ -9,8 +10,9 @@ import java.util.Optional;
 public interface IUserService {
 
     User save(User user);
-    Optional<User> findById(Long id);
+    Optional<UserDTO> findById(Long id)  throws ResourceNotFoundException;
     void update(User user);
     void delete(Long id) throws ResourceNotFoundException;
-    List<User> findAll();
+    List<UserDTO> findAll();
+    Optional<UserDTO> findByEmail(String email);
 }

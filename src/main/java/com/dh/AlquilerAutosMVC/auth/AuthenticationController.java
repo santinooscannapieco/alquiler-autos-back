@@ -1,11 +1,14 @@
 package com.dh.AlquilerAutosMVC.auth;
 
+import com.dh.AlquilerAutosMVC.dto.UserDTO;
+import com.dh.AlquilerAutosMVC.entity.User;
+import com.dh.AlquilerAutosMVC.service.IUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
+    private final IUserService iUserService;
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(
@@ -24,5 +28,14 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> login(
             @RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(authenticationService.login(request));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> getMe(Authentication authentication) {
+        String email = authentication.getName();
+
+        return iUserService.findByEmail(email)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

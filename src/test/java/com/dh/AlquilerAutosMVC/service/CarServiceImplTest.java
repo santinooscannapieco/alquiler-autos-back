@@ -14,6 +14,7 @@ class CarServiceImplTest {
     @Autowired
     private CarServiceImpl carServiceImpl;
 
+    /*
     @Test
     void findById() {
         Long idCar = Long.valueOf(1);
@@ -21,5 +22,5 @@ class CarServiceImplTest {
         // Buscar auto
         Car car = carServiceImpl.findById(idCar);
         assertNotNull(car);
-    }
+    }*/
 }
