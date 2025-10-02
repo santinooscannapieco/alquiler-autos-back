@@ -1,12 +1,8 @@
 package com.dh.AlquilerAutosMVC.service;
 
-import com.dh.AlquilerAutosMVC.entity.Car;
-import com.dh.AlquilerAutosMVC.service.impl.CarServiceImpl;
-import org.junit.jupiter.api.Test;
+import com.dh.AlquilerAutosMVC.exception.service.impl.CarServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class CarServiceImplTest {

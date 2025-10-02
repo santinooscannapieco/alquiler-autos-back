@@ -1,28 +1,31 @@
-package com.dh.AlquilerAutosMVC.service.impl;
+package com.dh.AlquilerAutosMVC.exception.service.impl;
 
 import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
 import com.dh.AlquilerAutosMVC.entity.Car;
+import com.dh.AlquilerAutosMVC.entity.Role;
 import com.dh.AlquilerAutosMVC.entity.User;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
+import com.dh.AlquilerAutosMVC.exception.service.ICarReservationService;
 import com.dh.AlquilerAutosMVC.repository.ICarReservationRepository;
 import com.dh.AlquilerAutosMVC.entity.CarReservation;
-import com.dh.AlquilerAutosMVC.service.ICarReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-public class CarReservationService implements ICarReservationService {
+public class CarReservationServiceImpl implements ICarReservationService {
 
-    private ICarReservationRepository carReservationRepository;
+    private final ICarReservationRepository carReservationRepository;
 
     @Autowired
-    public CarReservationService(ICarReservationRepository carReservationRepository) {
+    public CarReservationServiceImpl(ICarReservationRepository carReservationRepository) {
         this.carReservationRepository = carReservationRepository;
     }
 
@@ -140,36 +143,25 @@ public class CarReservationService implements ICarReservationService {
     }
 
     @Override
-    public Optional<CarReservationDTO> delete(Long id) throws ResourceNotFoundException {
-        Optional<CarReservation> carReservationToLookFor = carReservationRepository.findById(id);
+    public void delete(Long id, User currentUser) throws ResourceNotFoundException, AccessDeniedException {
+        CarReservation carReservation = carReservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reservation not found"));
 
-        Optional<CarReservationDTO> carReservationDTO;
+        System.out.println("ROLE: " + currentUser.getRole());
+        System.out.println("ADMIN");
+        if(currentUser.getRole() == Role.ADMIN) {
 
-        if (carReservationToLookFor.isPresent()) {
-            // Recupero la reserva y la guardo en una entidad reserva
-            CarReservation carReservation = carReservationToLookFor.get();
             carReservationRepository.delete(carReservation);
-
-            // Vamos a devolver un dto
-            CarReservationDTO carReservationDTOToReturn = new CarReservationDTO();
-
-            carReservationDTOToReturn.setId(carReservation.getId());
-            carReservationDTOToReturn.setCar_id(carReservation.getCar().getId());
-            carReservationDTOToReturn.setUser_id(carReservation.getUser().getId());
-            carReservationDTOToReturn.setPickUp(carReservation.getPickUp());
-            carReservationDTOToReturn.setRentalStart(carReservation.getRentalStart().toString());
-            carReservationDTOToReturn.setRentalEnd(carReservation.getRentalEnd().toString());
-
-            carReservationDTO = Optional.of(carReservationDTOToReturn);
-
-            return carReservationDTO;
-        } else {
-            // Lanzar exception
-            throw new ResourceNotFoundException("No se encontró la reserva con id: " + id);
+            return;
         }
 
+        if(currentUser.getRole() == Role.USER
+                && carReservation.getUser().getId().equals(currentUser.getId())) {
+            carReservationRepository.delete(carReservation);
+            return;
+        }
 
-
+        throw new AccessDeniedException("No tiene permisos para eliminar esta reserva");
     }
 
     @Override
@@ -190,6 +182,32 @@ public class CarReservationService implements ICarReservationService {
         }
 
         return carReservationDTOS;
+    }
+
+
+    // - Buscar por ID de usuario
+
+    @Override
+    public List<CarReservationDTO> findByUserId(Long id, User currentUser) throws AccessDeniedException {
+        if (!currentUser.getRole().equals(Role.ADMIN) && !currentUser.getId().equals(id)) {
+            throw new AccessDeniedException("No tiene permisos para ver estas reservas");
+        }
+
+        List<CarReservation> reservations = carReservationRepository.findByUserId(id);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        return reservations.stream()
+                .map(res -> new CarReservationDTO(
+                        res.getId(),
+                        res.getCar().getId(),
+                        res.getUser().getId(),
+                        res.getPickUp(),
+                        res.getRentalStart().format(formatter),
+                        res.getRentalEnd().format(formatter)
+                ))
+                .collect(Collectors.toList());
+
     }
 
     // TODO: AGREGAR

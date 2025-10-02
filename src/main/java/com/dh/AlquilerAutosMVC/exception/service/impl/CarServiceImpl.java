@@ -1,38 +1,29 @@
-package com.dh.AlquilerAutosMVC.service.impl;
+package com.dh.AlquilerAutosMVC.exception.service.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.dh.AlquilerAutosMVC.dto.CarDTO;
-import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
 import com.dh.AlquilerAutosMVC.dto.DateRangeDTO;
-import com.dh.AlquilerAutosMVC.entity.CarReservation;
 import com.dh.AlquilerAutosMVC.entity.Category;
-import com.dh.AlquilerAutosMVC.entity.User;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.repository.ICarRepository;
 
 import com.dh.AlquilerAutosMVC.entity.Car;
 import com.dh.AlquilerAutosMVC.repository.ICategoryRepository;
-import com.dh.AlquilerAutosMVC.service.ICarService;
-import com.dh.AlquilerAutosMVC.service.ICategoryService;
+import com.dh.AlquilerAutosMVC.exception.service.ICarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class CarServiceImpl implements ICarService {
 
-    private ICarRepository carRepository;
-    private ICategoryRepository categoryRepository;
+    private final ICarRepository carRepository;
+    private final ICategoryRepository categoryRepository;
 
     @Autowired
     private Cloudinary cloudinary;

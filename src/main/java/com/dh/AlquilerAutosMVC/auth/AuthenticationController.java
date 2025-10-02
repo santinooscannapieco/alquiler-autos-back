@@ -1,14 +1,11 @@
 package com.dh.AlquilerAutosMVC.auth;
 
 import com.dh.AlquilerAutosMVC.dto.UserDTO;
-import com.dh.AlquilerAutosMVC.entity.User;
-import com.dh.AlquilerAutosMVC.service.IUserService;
+import com.dh.AlquilerAutosMVC.exception.service.IUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")

@@ -1,29 +1,25 @@
-package com.dh.AlquilerAutosMVC.service.impl;
+package com.dh.AlquilerAutosMVC.exception.service.impl;
 
-import com.dh.AlquilerAutosMVC.dto.CarDTO;
 import com.dh.AlquilerAutosMVC.dto.CategoryDTO;
-import com.dh.AlquilerAutosMVC.dto.DateRangeDTO;
 import com.dh.AlquilerAutosMVC.entity.Car;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
+import com.dh.AlquilerAutosMVC.exception.service.ICategoryService;
 import com.dh.AlquilerAutosMVC.repository.ICarRepository;
 import com.dh.AlquilerAutosMVC.repository.ICategoryRepository;
 import com.dh.AlquilerAutosMVC.entity.Category;
-import com.dh.AlquilerAutosMVC.service.ICarService;
-import com.dh.AlquilerAutosMVC.service.ICategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class CategoryService implements ICategoryService {
 
-    private ICategoryRepository categoryRepository;
-    private ICarRepository carRepository;
+    private final ICategoryRepository categoryRepository;
+    private final ICarRepository carRepository;
 
     @Autowired
     public CategoryService(ICategoryRepository categoryRepository, ICarRepository carRepository) {

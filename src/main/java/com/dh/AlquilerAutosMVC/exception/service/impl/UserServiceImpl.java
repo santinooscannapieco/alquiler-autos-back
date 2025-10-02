@@ -1,17 +1,16 @@
-package com.dh.AlquilerAutosMVC.service.impl;
+package com.dh.AlquilerAutosMVC.exception.service.impl;
 
-import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
 import com.dh.AlquilerAutosMVC.dto.UserDTO;
-import com.dh.AlquilerAutosMVC.entity.Car;
+import com.dh.AlquilerAutosMVC.entity.Role;
 import com.dh.AlquilerAutosMVC.entity.User;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
-import com.dh.AlquilerAutosMVC.repository.ICarReservationRepository;
 import com.dh.AlquilerAutosMVC.repository.IUserRepository;
-import com.dh.AlquilerAutosMVC.service.ICarReservationService;
-import com.dh.AlquilerAutosMVC.service.IUserService;
+import com.dh.AlquilerAutosMVC.exception.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,16 +18,11 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements IUserService {
 
-    private IUserRepository userRepository;
+    private final IUserRepository userRepository;
 
     @Autowired
     public UserServiceImpl(IUserRepository userRepository) {
         this.userRepository = userRepository;
-    }
-
-    @Override
-    public User save(User user) {
-        return userRepository.save(user);
     }
 
     @Override
@@ -38,7 +32,26 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public void update(User user) {
+    public void update(UserDTO userDTO, Authentication auth) throws ResourceNotFoundException, AccessDeniedException {
+        User user = userRepository.findById(userDTO.id())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        User loggedUser = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario logueado no encontrado"));
+
+        if (!loggedUser.getId().equals(user.getId()) && loggedUser.getRole() != Role.ADMIN) {
+            throw new AccessDeniedException("No tenés permiso para actualizar este usuario");
+        }
+        user.setFirstname(userDTO.firstname());
+        user.setLastName(userDTO.lastName());
+        user.setEmail(userDTO.email());
+
+        if (loggedUser.getRole() == Role.ADMIN && userDTO.role() != null) {
+            user.setRole(userDTO.role());
+        } else if (userDTO.role() != null) {
+            throw  new AccessDeniedException("No tenés permiso para cambiar el rol");
+        }
+
         userRepository.save(user);
     }
 

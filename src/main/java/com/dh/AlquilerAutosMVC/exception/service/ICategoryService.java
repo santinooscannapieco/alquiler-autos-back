@@ -1,4 +1,4 @@
-package com.dh.AlquilerAutosMVC.service;
+package com.dh.AlquilerAutosMVC.exception.service;
 
 import com.dh.AlquilerAutosMVC.dto.CategoryDTO;
 import com.dh.AlquilerAutosMVC.entity.Category;

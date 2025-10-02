@@ -1,12 +1,11 @@
 package com.dh.AlquilerAutosMVC.controller;
 
-import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
 import com.dh.AlquilerAutosMVC.dto.CategoryDTO;
-import com.dh.AlquilerAutosMVC.entity.Category;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
-import com.dh.AlquilerAutosMVC.service.ICategoryService;
+import com.dh.AlquilerAutosMVC.exception.service.ICategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,7 +15,7 @@ import java.util.Optional;
 @RequestMapping("/categorias")
 public class CategoryController {
 
-    private ICategoryService iCategoryService;
+    private final ICategoryService iCategoryService;
 
     @Autowired
     public CategoryController(ICategoryService iCategoryService) {
@@ -24,6 +23,7 @@ public class CategoryController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<CategoryDTO> save(@RequestBody CategoryDTO categoryDTO) throws ResourceNotFoundException {
 
         if (iCategoryService.findByName(categoryDTO.getName()) == null) {
@@ -33,18 +33,8 @@ public class CategoryController {
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CategoryDTO> findById(@PathVariable Long id) throws ResourceNotFoundException {
-        Optional<CategoryDTO> categoryDTO = iCategoryService.findById(id);
-
-        if (categoryDTO.isPresent()) {
-            return ResponseEntity.ok(categoryDTO.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
     @PutMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<String> update(@RequestBody CategoryDTO categoryDTO) throws ResourceNotFoundException {
         ResponseEntity<String> response;
         Optional<CategoryDTO> categoryToLookFor = iCategoryService.findById(categoryDTO.getId());
@@ -59,10 +49,22 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<String> delete(@PathVariable Long id) throws ResourceNotFoundException {
         iCategoryService.delete(id);
         return ResponseEntity.ok("Se eliminó con éxito la categoría con id: " + id);
 
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoryDTO> findById(@PathVariable Long id) throws ResourceNotFoundException {
+        Optional<CategoryDTO> categoryDTO = iCategoryService.findById(id);
+
+        if (categoryDTO.isPresent()) {
+            return ResponseEntity.ok(categoryDTO.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping
@@ -70,9 +72,6 @@ public class CategoryController {
         return iCategoryService.findAll();
     }
 
-
-    // TODO: CORREGIR
-    //  
     @GetMapping("/nombre/{name}")
     public ResponseEntity<CategoryDTO> findByName(@PathVariable String name) throws ResourceNotFoundException {
         Optional<CategoryDTO> categoryToLookFor = iCategoryService.findByName(name);

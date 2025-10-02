@@ -1,8 +1,7 @@
 package com.dh.AlquilerAutosMVC.controller;
 
 import com.dh.AlquilerAutosMVC.dto.CategoryDTO;
-import com.dh.AlquilerAutosMVC.entity.Category;
-import com.dh.AlquilerAutosMVC.service.ICategoryService;
+import com.dh.AlquilerAutosMVC.exception.service.ICategoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,11 +10,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)

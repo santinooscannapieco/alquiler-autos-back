@@ -1,16 +1,14 @@
 package com.dh.AlquilerAutosMVC.controller;
 
 import com.dh.AlquilerAutosMVC.dto.CarDTO;
-import com.dh.AlquilerAutosMVC.entity.Car;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
-import com.dh.AlquilerAutosMVC.service.ICarService;
+import com.dh.AlquilerAutosMVC.exception.service.ICarService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hibernate.engine.jdbc.env.spi.IdentifierCaseStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.MediaTypeEditor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,14 +19,16 @@ import java.util.Optional;
 @RequestMapping("/autos")
 public class CarController {
 
-    private ICarService iCarService;
+    private final ICarService iCarService;
 
     @Autowired
     public CarController(ICarService iCarService) {
         this.iCarService = iCarService;
     }
 
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<CarDTO> save(
             @RequestPart("car") String carJson,
             @RequestPart(value = "images", required = false) MultipartFile[] images
@@ -37,6 +37,20 @@ public class CarController {
         CarDTO carDTO = mapper.readValue(carJson, CarDTO.class);
 
         return ResponseEntity.ok(iCarService.save(carDTO, images));
+    }
+
+    @PutMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<CarDTO> update(@RequestBody CarDTO carDTO, @RequestPart(value = "images", required = false) MultipartFile[] images) {
+        CarDTO updated = iCarService.update(carDTO, images);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<String> delete(@PathVariable Long id) throws ResourceNotFoundException {
+        iCarService.delete(id);
+        return ResponseEntity.ok("Se eliminó el auto con id: " + id);
     }
 
     @GetMapping("/{id}")
@@ -50,24 +64,10 @@ public class CarController {
         }
     }
 
-    // endpoint que nos permita actualizar un auto ya existente
-    @PutMapping
-    public ResponseEntity<CarDTO> update(@RequestBody CarDTO carDTO, @RequestPart(value = "images", required = false) MultipartFile[] images) {
-        CarDTO updated = iCarService.update(carDTO, images);
-        return ResponseEntity.ok(updated);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) throws ResourceNotFoundException {
-        iCarService.delete(id);
-        return ResponseEntity.ok("Se eliminó el auto con id: " + id);
-    }
-
     @GetMapping
     public ResponseEntity<List<CarDTO>> findAll() {
         return ResponseEntity.ok(iCarService.findAll());
     }
-
 
     @GetMapping("/marca/{carBrand}")
     public ResponseEntity<List<CarDTO>> findByCarBrand(@PathVariable String carBrand) throws Exception {
@@ -86,10 +86,8 @@ public class CarController {
         List<CarDTO> carList = iCarService.findByName(name);
 
         if (carList.isEmpty()) {
-            throw new Exception("No se escontró un auto con el nombre: " + name);
+            throw new Exception("No se encontró un auto con el nombre: " + name);
         }
         return ResponseEntity.ok(carList);
     }
-
-
 }
