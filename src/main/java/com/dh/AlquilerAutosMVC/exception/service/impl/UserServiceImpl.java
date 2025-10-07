@@ -26,30 +26,20 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public Optional<UserDTO> findById(Long id) throws ResourceNotFoundException {
-        return userRepository.findById(id)
-                .map(User::toDTO);
-    }
-
-    @Override
     public void update(UserDTO userDTO, Authentication auth) throws ResourceNotFoundException, AccessDeniedException {
-        User user = userRepository.findById(userDTO.id())
+        User user = userRepository.findById(userDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         User loggedUser = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario logueado no encontrado"));
 
-        if (!loggedUser.getId().equals(user.getId()) && loggedUser.getRole() != Role.ADMIN) {
-            throw new AccessDeniedException("No tenés permiso para actualizar este usuario");
-        }
-        user.setFirstname(userDTO.firstname());
-        user.setLastName(userDTO.lastName());
-        user.setEmail(userDTO.email());
+        boolean isAdmin = loggedUser.getRole() == Role.ADMIN;
+        boolean isSelf = loggedUser.getId().equals(user.getId());
 
-        if (loggedUser.getRole() == Role.ADMIN && userDTO.role() != null) {
-            user.setRole(userDTO.role());
-        } else if (userDTO.role() != null) {
-            throw  new AccessDeniedException("No tenés permiso para cambiar el rol");
+        if (isSelf || isAdmin) {
+            user.updateFromDTO(userDTO, isAdmin);
+        } else {
+            throw new AccessDeniedException("No tenés permiso para actualizar este usuario");
         }
 
         userRepository.save(user);
@@ -66,6 +56,12 @@ public class UserServiceImpl implements IUserService {
         }
 
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public Optional<UserDTO> findById(Long id) throws ResourceNotFoundException {
+        return userRepository.findById(id)
+                .map(User::toDTO);
     }
 
     @Override

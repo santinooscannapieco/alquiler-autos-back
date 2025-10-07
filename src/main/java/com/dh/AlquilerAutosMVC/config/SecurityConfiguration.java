@@ -22,9 +22,6 @@ public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
 
-
-    // TODO:
-    //  Diferenciar que rol tiene el usuario y definir que peticiones tiene permitidas y que no!
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 

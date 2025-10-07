@@ -6,8 +6,10 @@ import com.dh.AlquilerAutosMVC.entity.Role;
 import com.dh.AlquilerAutosMVC.entity.User;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.exception.service.ICarReservationService;
+import com.dh.AlquilerAutosMVC.repository.ICarRepository;
 import com.dh.AlquilerAutosMVC.repository.ICarReservationRepository;
 import com.dh.AlquilerAutosMVC.entity.CarReservation;
+import com.dh.AlquilerAutosMVC.repository.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,120 +25,44 @@ import java.util.stream.Collectors;
 public class CarReservationServiceImpl implements ICarReservationService {
 
     private final ICarReservationRepository carReservationRepository;
+    private final ICarRepository carRepository;
+    private final IUserRepository userRepository;
 
     @Autowired
-    public CarReservationServiceImpl(ICarReservationRepository carReservationRepository) {
+    public CarReservationServiceImpl(ICarReservationRepository carReservationRepository, ICarRepository carRepository, IUserRepository userRepository) {
         this.carReservationRepository = carReservationRepository;
+        this.carRepository = carRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
-    public CarReservationDTO save(CarReservationDTO carReservationDTO) {
-        // Mapear nuestras entidades como DTO
-        // Instanciar una entidad de reserva
-        CarReservation carReservationEntity = new CarReservation();
+    public CarReservationDTO save(CarReservationDTO dto) {
+        Car car = carRepository.findById(dto.getCarId())
+                .orElseThrow(() -> new RuntimeException("Car not found"));
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new RuntimeException("Car not found"));
 
-        // Instanciar un auto
-        Car carEntity = new Car();
-        carEntity.setId(carReservationDTO.getCar_id());
+        CarReservation reservation = CarReservation.fromDTO(dto, car, user);
 
-        // Instanciar un usuario
-        User userEntity = new User();
-        userEntity.setId(carReservationDTO.getUser_id());
+        CarReservation saved = carReservationRepository.save(reservation);
 
-        carReservationEntity.setCar(carEntity);
-        carReservationEntity.setUser(userEntity);
-        carReservationEntity.setPickUp(carReservationDTO.getPickUp());
-
-        //convertir un String en LocalDate
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate rentalStart = LocalDate.parse(carReservationDTO.getRentalStart(), formatter);
-        LocalDate rentalEnd = LocalDate.parse(carReservationDTO.getRentalEnd(), formatter);
-
-        carReservationEntity.setRentalStart(rentalStart);
-        carReservationEntity.setRentalEnd(rentalEnd);
-
-        // Persisto en la BD
-        carReservationRepository.save(carReservationEntity);
-
-
-        // Vamos a trabajar con el DTO que vamos a devolver
-        CarReservationDTO carReservationDTOToReturn = new CarReservationDTO();
-
-        //Seteo los datos de la entidad
-        carReservationDTOToReturn.setId(carReservationEntity.getId());
-        carReservationDTOToReturn.setCar_id(carReservationEntity.getCar().getId());
-        carReservationDTOToReturn.setUser_id(carReservationEntity.getUser().getId());
-        carReservationDTOToReturn.setPickUp(carReservationEntity.getPickUp());
-        carReservationDTOToReturn.setRentalStart(carReservationEntity.getRentalStart().toString());
-        carReservationDTOToReturn.setRentalEnd(carReservationEntity.getRentalEnd().toString());
-
-        return carReservationDTOToReturn;
+        return saved.toDTO();
     }
 
     @Override
-    public Optional<CarReservationDTO> findById(Long id) throws ResourceNotFoundException {
-        Optional<CarReservation> carReservationToLookFor = carReservationRepository.findById(id);
-        // Instancio un dto
-        Optional<CarReservationDTO> carReservationDTO = null;
+    public CarReservationDTO update(CarReservationDTO dto) throws Exception {
 
-        if (carReservationToLookFor.isPresent()) {
-            CarReservation carReservation = carReservationToLookFor.get();
+        if (carReservationRepository.findById(dto.getId()).isPresent()) {
+            Car car = carRepository.findById(dto.getCarId())
+                    .orElseThrow(() -> new RuntimeException("Car not found"));
+            User user = userRepository.findById(dto.getUserId())
+                    .orElseThrow(() -> new RuntimeException("Car not found"));
 
-            //Trabajamos con la info que tenemos q devolver: DTO
-            CarReservationDTO carReservationDTOToReturn = new CarReservationDTO();
-            carReservationDTOToReturn.setId(carReservation.getId());
-            carReservationDTOToReturn.setCar_id(carReservation.getCar().getId());
-            carReservationDTOToReturn.setUser_id(carReservation.getUser().getId());
-            carReservationDTOToReturn.setPickUp(carReservation.getPickUp());
-            carReservationDTOToReturn.setRentalStart(carReservation.getRentalStart().toString());
-            carReservationDTOToReturn.setRentalEnd(carReservation.getRentalEnd().toString());
+            CarReservation reservation = CarReservation.fromDTO(dto, car, user);
 
-            carReservationDTO = Optional.of(carReservationDTOToReturn);
-            return carReservationDTO;
-        } else {
-            throw new ResourceNotFoundException("No se encontró la reserva con id: "+ id);
-        }
+            CarReservation saved = carReservationRepository.save(reservation);
 
-
-    }
-
-    @Override
-    public CarReservationDTO update(CarReservationDTO carReservationDTO) throws Exception {
-
-        if (carReservationRepository.findById(carReservationDTO.getId()).isPresent()) {
-            Optional<CarReservation> carReservationEntity = carReservationRepository.findById(carReservationDTO.getId());
-
-            Car carEntity = new Car();
-            carEntity.setId(carReservationDTO.getCar_id());
-
-            User userEntity = new User();
-            userEntity.setId(carReservationDTO.getUser_id());
-
-            carReservationEntity.get().setCar(carEntity);
-            carReservationEntity.get().setUser(userEntity);
-            carReservationEntity.get().setPickUp(carReservationDTO.getPickUp());
-
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDate rentalStart = LocalDate.parse(carReservationDTO.getRentalStart(), formatter);
-            LocalDate rentalEnd = LocalDate.parse(carReservationDTO.getRentalEnd(), formatter);
-
-            carReservationEntity.get().setRentalStart(rentalStart);
-            carReservationEntity.get().setRentalEnd(rentalEnd);
-
-            carReservationRepository.save(carReservationEntity.get());
-
-            // Vamos a trabajar con el DTO que vamos a devolver
-            CarReservationDTO carReservationDTOToReturn = new CarReservationDTO();
-
-            //Seteo los datos de la entidad
-            carReservationDTOToReturn.setId(carReservationEntity.get().getId());
-            carReservationDTOToReturn.setCar_id(carReservationEntity.get().getCar().getId());
-            carReservationDTOToReturn.setUser_id(carReservationEntity.get().getUser().getId());
-            carReservationDTOToReturn.setPickUp(carReservationEntity.get().getPickUp());
-            carReservationDTOToReturn.setRentalStart(carReservationEntity.get().getRentalStart().toString());
-            carReservationDTOToReturn.setRentalEnd(carReservationEntity.get().getRentalEnd().toString());
-
-            return carReservationDTOToReturn;
+            return saved.toDTO();
         } else {
             throw new Exception("No se pudo actualizar el turno");
         }
@@ -165,28 +91,39 @@ public class CarReservationServiceImpl implements ICarReservationService {
     }
 
     @Override
+    public Optional<CarReservationDTO> findById(Long id) throws ResourceNotFoundException {
+        Optional<CarReservation> carReservationToLookFor = carReservationRepository.findById(id);
+
+        if (carReservationToLookFor.isPresent()) {
+            CarReservation carReservation = carReservationToLookFor.get();
+
+            CarReservationDTO carReservationDTOToReturn = carReservation.toDTO();
+
+            return Optional.of(carReservationDTOToReturn);
+        } else {
+            throw new ResourceNotFoundException("No se encontró la reserva con id: "+ id);
+        }
+    }
+
+    @Override
     public List<CarReservationDTO> findAll() {
         // Traemos las entidades de la BD
         List<CarReservation> carReservationList = carReservationRepository.findAll();
 
         // Creamos lista vacia de reservasDTO que vamos a devolver
-        List<CarReservationDTO> carReservationDTOS = new ArrayList<>();
+        List<CarReservationDTO> carReservationDTOList = new ArrayList<>();
 
         // Recorremos la lista de entidades de reserva
         // Para guardarlas en la nueva lista de reservas DTO
         for (CarReservation carReservation : carReservationList) {
-            carReservationDTOS.add(new CarReservationDTO(carReservation.getId(),
-                    carReservation.getCar().getId(), carReservation.getUser().getId(),
-                    carReservation.getPickUp(), carReservation.getRentalStart().toString(),
-                    carReservation.getRentalEnd().toString()));
+            carReservationDTOList.add(carReservation.toDTO());
         }
 
-        return carReservationDTOS;
+        return carReservationDTOList;
     }
 
 
     // - Buscar por ID de usuario
-
     @Override
     public List<CarReservationDTO> findByUserId(Long id, User currentUser) throws AccessDeniedException {
         if (!currentUser.getRole().equals(Role.ADMIN) && !currentUser.getId().equals(id)) {
@@ -195,19 +132,9 @@ public class CarReservationServiceImpl implements ICarReservationService {
 
         List<CarReservation> reservations = carReservationRepository.findByUserId(id);
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
         return reservations.stream()
-                .map(res -> new CarReservationDTO(
-                        res.getId(),
-                        res.getCar().getId(),
-                        res.getUser().getId(),
-                        res.getPickUp(),
-                        res.getRentalStart().format(formatter),
-                        res.getRentalEnd().format(formatter)
-                ))
+                .map(CarReservation::toDTO)
                 .collect(Collectors.toList());
-
     }
 
     // TODO: AGREGAR

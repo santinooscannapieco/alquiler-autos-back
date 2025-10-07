@@ -25,17 +25,7 @@ public class UserController {
         this.iUserService = iUserService;
     }
 
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<UserDTO> findById(@PathVariable Long id) throws ResourceNotFoundException {
-        Optional<UserDTO> userDTO = iUserService.findById(id);
 
-        if (userDTO.isPresent()) {
-            return ResponseEntity.ok(userDTO.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
 
     @PutMapping
     @PreAuthorize("#userDTO.id == authentication.principal.id or hasRole('ADMIN')")
@@ -57,6 +47,14 @@ public class UserController {
         return ResponseEntity.ok("Se eliminó el usuario con id: " + id);
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<UserDTO> findById(@PathVariable Long id) throws ResourceNotFoundException {
+        Optional<UserDTO> userDTO = iUserService.findById(id);
+
+        return userDTO.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<List<UserDTO>> findAll() {
@@ -68,10 +66,6 @@ public class UserController {
     public ResponseEntity<UserDTO> findByEmail(@RequestParam String email) {
         Optional<UserDTO> userDTO = iUserService.findByEmail(email);
 
-        if (userDTO.isPresent()) {
-            return ResponseEntity.ok(userDTO.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return userDTO.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

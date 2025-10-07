@@ -27,116 +27,44 @@ public class CategoryService implements ICategoryService {
         this.carRepository = carRepository;
     }
 
-    public CategoryDTO toDTO(Category category) {
-        CategoryDTO dto = new CategoryDTO();
-        dto.setId(category.getId());
-        dto.setName(category.getName());
-        List<Long> carIds = category.getCars().stream()
-                .map(Car::getId)
-                .collect(Collectors.toList());
-
-        dto.setCars_id(carIds);
-        return dto;
-    }
-
     @Override
-    public CategoryDTO save(CategoryDTO categoryDTO) {
-        Category categoryEntity = new Category();
+    public CategoryDTO save(CategoryDTO categoryDTO) throws ResourceNotFoundException {
+        Category category = new Category();
+        category.setName(categoryDTO.getName());
 
-        List<Car> carList = new ArrayList<>();
+        List<Car> carList = getCarsFromIds(categoryDTO.getCars_id());
+        category.setCars(carList);
 
-        // Recorro lista de IDs
-        List<Long> cars_id = categoryDTO.getCars_id();
-        for (Long id : cars_id) {
-            // Busco auto con esa id
-            Optional<Car> car = carRepository.findById(id);
+        categoryRepository.save(category);
 
-            // CUANDO AGREGUE EL CARDTO TENGO QUE MODIFICAR ESTO
-            // Creo y agrego el auto con todos sus atributos
-            Car carToAdd = new Car(car.get().getId(),car.get().getName(),
-                    car.get().getDescription(),car.get().getImagePaths(),
-                    car.get().getCarBrand(), car.get().getPricePerHour(),
-                    car.get().getCharacteristics(), car.get().getCategory(),
-                    car.get().getCarReservations());
-            carList.add(carToAdd);
-        }
-
-        // Seteo los atributos de la entidad categoria para instanciarla en la BD
-        categoryEntity.setName(categoryDTO.getName());
-        categoryEntity.setCars(carList);
-
-        categoryRepository.save(categoryEntity);
-
-        //Ahora vamos a trabajor con el dto a devolver
-        CategoryDTO categoryDTOToReturn = new CategoryDTO();
-
-        categoryDTOToReturn.setId(categoryEntity.getId());
-        categoryDTOToReturn.setName(categoryEntity.getName());
-
-        // Instanciar la lista a devolver
-        List<Long> cars_id_ToReturn = new ArrayList<>();
-        // Recorro lista de entidades auto y la paso a lista de ids
-        for (Car car : categoryEntity.getCars()) {
-            cars_id_ToReturn.add(car.getId());
-        }
-        categoryDTOToReturn.setCars_id(cars_id_ToReturn);
-
-        return categoryDTOToReturn;
-    }
-
-    @Override
-    public Optional<CategoryDTO> findById(Long id) throws ResourceNotFoundException {
-
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Auto no encontrado"));
-        return Optional.of(toDTO(category));
+        return category.toDTO();
     }
 
     @Override
     public CategoryDTO update(CategoryDTO categoryDTO) throws ResourceNotFoundException {
+        Category category = categoryRepository.findById(categoryDTO.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró la categoría con ID: " + categoryDTO.getId()));
 
-        if (categoryRepository.findById(categoryDTO.getId()).isPresent()) {
-            Optional<Category> categoryEntity = categoryRepository.findById(categoryDTO.getId());
+        category.setName(categoryDTO.getName());
 
-            categoryEntity.get().setName(categoryDTO.getName());
+        List<Car> carList = getCarsFromIds(categoryDTO.getCars_id());
+        category.setCars(carList);
 
-            List<Car> carList = new ArrayList<>();
+        categoryRepository.save(category);
 
-            // Recorro lista de IDs
-            List<Long> cars_id = categoryDTO.getCars_id();
-            for (Long id : cars_id) {
-                // Busco auto con esa id
-                Optional<Car> car = carRepository.findById(id);
+        return category.toDTO();
+    }
 
-                // CUANDO AGREGUE EL CARDTO TENGO QUE MODIFICAR ESTO
-                // Creo y agrego el auto con todos sus atributos
-                Car carToAdd = new Car(car.get().getId(),car.get().getName(),
-                        car.get().getDescription(),car.get().getImagePaths(),
-                        car.get().getCarBrand(), car.get().getPricePerHour(),
-                        car.get().getCharacteristics(), car.get().getCategory(),
-                        car.get().getCarReservations());
-                carList.add(carToAdd);
-            }
-            categoryEntity.get().setCars(carList);
+    private List<Car> getCarsFromIds(List<Long> carIds) throws ResourceNotFoundException {
+        List<Car> carList = new ArrayList<>();
 
-            categoryRepository.save(categoryEntity.get());
-
-            CategoryDTO categoryDTOToReturn = new CategoryDTO();
-
-            categoryDTOToReturn.setId(categoryEntity.get().getId());
-            categoryDTOToReturn.setName(categoryEntity.get().getName());
-
-            List<Long> cars_id_ToReturn = new ArrayList<>();
-            // Recorro lista de entidades auto y la paso a lista de ids
-            for (Car car : categoryEntity.get().getCars()) {
-                cars_id_ToReturn.add(car.getId());
-            }
-            categoryDTOToReturn.setCars_id(cars_id_ToReturn);
-
-            return categoryDTOToReturn;
-        } else {
-            throw new ResourceNotFoundException("No se pudo actualizar");
+        for (Long id : carIds) {
+            Car car = carRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("No se encontró el auto con ID: " + id));
+            carList.add(car);
         }
+
+        return carList;
     }
 
     @Override
@@ -156,31 +84,20 @@ public class CategoryService implements ICategoryService {
     }
 
     @Override
-    public List<CategoryDTO> findAll() {
-        /* List<Category> categoryList = categoryRepository.findAll();
+    public Optional<CategoryDTO> findById(Long id) throws ResourceNotFoundException {
 
-        List<CategoryDTO> categoryDTOS = new ArrayList<>();
-
-        for (Category category : categoryList) {
-            // Instanciar la lista a devolver
-            List<Long> cars_id_ToReturn = new ArrayList<>();
-            // Recorro lista de entidades auto y la paso a lista de ids
-            for (Car car : category.getCars()) {
-                cars_id_ToReturn.add(car.getId());
-            }
-
-            categoryDTOS.add(new CategoryDTO(category.getId(), category.getName(), cars_id_ToReturn));
-        }*/
-
-        return categoryRepository.findAll().stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
-
-        //return categoryDTOS;
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Auto no encontrado"));
+        return Optional.of(category.toDTO());
     }
 
-    // TODO: AGREGAR
-    //  - Buscar por nombre de categoría
+    @Override
+    public List<CategoryDTO> findAll() {
+
+        return categoryRepository.findAll().stream()
+                .map(Category::toDTO)
+                .collect(Collectors.toList());
+    }
 
     @Override
     public Optional<CategoryDTO> findByName(String name) throws ResourceNotFoundException {

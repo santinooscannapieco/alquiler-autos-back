@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface ICategoryService {
 
-    CategoryDTO save(CategoryDTO categoryDTO);
+    CategoryDTO save(CategoryDTO categoryDTO) throws ResourceNotFoundException;
     Optional<CategoryDTO> findById(Long id) throws ResourceNotFoundException;
     CategoryDTO update(CategoryDTO categoryDTO) throws ResourceNotFoundException;
     void delete(Long id) throws ResourceNotFoundException;

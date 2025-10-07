@@ -14,9 +14,9 @@ public interface ICarReservationService {
 
 
     CarReservationDTO save(CarReservationDTO carReservationDTO);
-    Optional<CarReservationDTO> findById(Long id) throws ResourceNotFoundException;
     CarReservationDTO update(CarReservationDTO carReservationDTO) throws Exception;
     void delete(Long id, User currentUser) throws ResourceNotFoundException, AccessDeniedException;
+    Optional<CarReservationDTO> findById(Long id) throws ResourceNotFoundException;
     List<CarReservationDTO> findAll();
     List<CarReservationDTO> findByUserId(Long id, User currentUser)  throws AccessDeniedException;
 }

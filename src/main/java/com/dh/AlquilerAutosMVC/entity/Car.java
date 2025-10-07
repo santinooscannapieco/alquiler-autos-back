@@ -1,9 +1,13 @@
 package com.dh.AlquilerAutosMVC.entity;
 
+import com.dh.AlquilerAutosMVC.dto.CarDTO;
+import com.dh.AlquilerAutosMVC.dto.CategoryDTO;
+import com.dh.AlquilerAutosMVC.dto.DateRangeDTO;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Entity
@@ -122,4 +126,45 @@ public class Car {
     public void setCarReservations(List<CarReservation> carReservations) {
         this.carReservations = carReservations;
     }
+
+    public static Car fromDTO(CarDTO dto, Category category) {
+        Car car = new Car();
+
+        car.setName(dto.getName());
+        car.setDescription(dto.getDescription());
+        car.setImagePaths(dto.getImagePaths());
+        car.setCarBrand(dto.getCarBrand());
+        car.setPricePerHour(dto.getPricePerHour());
+        car.setCharacteristics(dto.getCharacteristics());
+
+        if (dto.getCategory_id() == null) {
+            throw new IllegalArgumentException("El ID de categoría no puede ser null");
+        }
+
+        car.setCategory(category);
+
+        return car;
+    }
+
+    public CarDTO toDTO() {
+        CarDTO dto = new CarDTO();
+        dto.setId(this.id);
+        dto.setName(this.name);
+        dto.setDescription(this.description);
+        dto.setImagePaths(this.imagePaths);
+        dto.setCarBrand(this.carBrand);
+        dto.setPricePerHour(this.pricePerHour);
+        dto.setCharacteristics(this.characteristics);
+        dto.setCategory_id(this.getCategory() != null ? this.getCategory().getId() : null);
+
+        // Agregamos los rangos de fechas ocupadas
+        List<DateRangeDTO> reservedDates = this.getCarReservations().stream()
+                .map(res -> new DateRangeDTO(res.getRentalStart(), res.getRentalEnd()))
+                .collect(Collectors.toList());
+
+        dto.setReservedDates(reservedDates);
+
+        return dto;
+    }
+
 }

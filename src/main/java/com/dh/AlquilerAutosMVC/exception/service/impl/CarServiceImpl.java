@@ -34,48 +34,6 @@ public class CarServiceImpl implements ICarService {
         this.categoryRepository = categoryRepository;
     }
 
-    public Car fromDTO(CarDTO dto) {
-        Car car = new Car();
-
-        car.setName(dto.getName());
-        car.setDescription(dto.getDescription());
-        car.setImagePaths(dto.getImagePaths());
-        car.setCarBrand(dto.getCarBrand());
-        car.setPricePerHour(dto.getPricePerHour());
-        car.setCharacteristics(dto.getCharacteristics());
-
-        if (dto.getCategory_id() == null) {
-            throw new IllegalArgumentException("El ID de categoría no puede ser null");
-        }
-
-        Category category = categoryRepository.findById(dto.getCategory_id())
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
-        car.setCategory(category);
-
-        return car;
-    }
-
-    public CarDTO toDTO(Car car) {
-        CarDTO dto = new CarDTO();
-        dto.setId(car.getId());
-        dto.setName(car.getName());
-        dto.setDescription(car.getDescription());
-        dto.setImagePaths(car.getImagePaths());
-        dto.setCarBrand(car.getCarBrand());
-        dto.setPricePerHour(car.getPricePerHour());
-        dto.setCharacteristics(car.getCharacteristics());
-        dto.setCategory_id(car.getCategory().getId());
-
-        // Agregamos los rangos de fechas ocupadas
-        List<DateRangeDTO> reservedDates = car.getCarReservations().stream()
-                .map(res -> new DateRangeDTO(res.getRentalStart(), res.getRentalEnd()))
-                .collect(Collectors.toList());
-
-        dto.setReservedDates(reservedDates);
-
-        return dto;
-    }
-
     private List<String> uploadImages(MultipartFile[] images) {
         List<String> urls = new ArrayList<>();
         if (images == null) return urls;
@@ -94,21 +52,22 @@ public class CarServiceImpl implements ICarService {
 
     @Override
     public CarDTO save(CarDTO carDTO, MultipartFile[] images) {
-        Car car = fromDTO(carDTO);
+        Category category = categoryRepository.findById(carDTO.getCategory_id())
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
+        Car car = Car.fromDTO(carDTO, category);
         List<String> imageUrls = uploadImages(images);
-
         car.setImagePaths(imageUrls);
 
         carRepository.save(car);
-        return toDTO(car);
+        return car.toDTO();
     }
 
     @Override
     public Optional<CarDTO> findById(Long id) throws ResourceNotFoundException {
         Car car = carRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Auto no encontrado"));
-        return Optional.of(toDTO(car));
+        return Optional.of(car.toDTO());
     }
 
 
@@ -136,7 +95,7 @@ public class CarServiceImpl implements ICarService {
         }
 
         carRepository.save(car);
-        return toDTO(car);
+        return car.toDTO();
     }
 
 
@@ -154,7 +113,7 @@ public class CarServiceImpl implements ICarService {
     @Override
     public List<CarDTO> findAll() {
         return carRepository.findAll().stream()
-                .map(this::toDTO)
+                .map(Car::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -162,7 +121,7 @@ public class CarServiceImpl implements ICarService {
     public List<CarDTO> findByCarBrand(String carBrand) {
         List<Car> cars = carRepository.findByCarBrandContainingIgnoreCase(carBrand);
         return cars.stream()
-                .map(this::toDTO)
+                .map(Car::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -170,7 +129,7 @@ public class CarServiceImpl implements ICarService {
     public List<CarDTO> findByName(String name) throws Exception {
         List<Car> cars = carRepository.findByNameContainingIgnoreCase(name);
         return cars.stream()
-                .map(this::toDTO)
+                .map(Car::toDTO)
                 .collect(Collectors.toList());
     }
 

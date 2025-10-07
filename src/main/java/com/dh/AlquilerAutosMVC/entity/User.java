@@ -75,36 +75,45 @@ public class User implements UserDetails  {
 
     // Convierte entidad a DTO
     public UserDTO toDTO() {
-        List<CarReservationDTO> reservationsDTO = carReservations.stream()
-                .map(r -> new CarReservationDTO(
-                        r.getId(),
-                        r.getCar().getId(),
-                        r.getUser().getId(),
-                        r.getPickUp(),
-                        r.getRentalStart().toString(),
-                        r.getRentalEnd().toString()
-                ))
-                .collect(Collectors.toList());
+        UserDTO dto = new UserDTO();
+        dto.setId(this.id);
+        dto.setFirstname(this.firstname);
+        dto.setLastName(this.lastName);
+        dto.setEmail(this.email);
+        dto.setRole(this.role);
 
-        return new UserDTO(
-                id,
-                firstname,
-                lastName,
-                email,
-                role,
-                reservationsDTO
-        );
+        if (this.carReservations != null) {
+            dto.setCarReservations(
+                    this.carReservations.stream()
+                            .map(CarReservation::toDTO)
+                            .collect(Collectors.toList())
+            );
+        }
+
+        return dto;
     }
 
     // Convierte DTO a entidad (para creación/actualización)
-    public static User fromDTO(UserDTO dto) {
+    public static User fromDTO(UserDTO dto, List<CarReservation> reservations) {
         User user = new User();
-        user.setId(dto.id());
-        user.setFirstname(dto.firstname());
-        user.setLastName(dto.lastName());
-        user.setEmail(dto.email());
-        user.setRole(dto.role());
-        // Las reservas no las seteamos aquí, normalmente se manejan aparte
+        user.setId(dto.getId());
+        user.setFirstname(dto.getFirstname());
+        user.setLastName(dto.getLastName());
+        user.setEmail(dto.getEmail());
+        user.setRole(dto.getRole());
+
+        user.setCarReservations(reservations);
+
         return user;
+    }
+
+    public void updateFromDTO(UserDTO dto, boolean canUpdateRole) {
+        if (dto.getFirstname() != null) this.firstname = dto.getFirstname();
+        if (dto.getLastName() != null) this.lastName = dto.getLastName();
+        if (dto.getEmail() != null) this.email = dto.getEmail();
+        // Si llega el rol, lo actualizamos también
+        if (canUpdateRole && dto.getRole() != null) {
+            this.role = dto.getRole();
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.dh.AlquilerAutosMVC.entity;
 
+import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -91,6 +92,28 @@ public class CarReservation {
 
     public void setRentalEnd(LocalDate rentalEnd) {
         this.rentalEnd = rentalEnd;
+    }
+
+    public CarReservationDTO toDTO() {
+        CarReservationDTO dto = new CarReservationDTO();
+        dto.setId(this.id);
+        dto.setCarId(this.car.getId());
+        dto.setUserId(this.user.getId());
+        dto.setPickUp(this.pickUp);
+        dto.setRentalStart(this.rentalStart.toString());
+        dto.setRentalEnd(this.rentalEnd.toString());
+        return dto;
+    }
+
+    public static CarReservation fromDTO(CarReservationDTO dto, Car car, User user) {
+        CarReservation reservation = new CarReservation();
+        reservation.setId(dto.getId());
+        reservation.setCar(car);
+        reservation.setUser(user);
+        reservation.setPickUp(dto.getPickUp());
+        reservation.setRentalStart(LocalDate.parse(dto.getRentalStart()));
+        reservation.setRentalEnd(LocalDate.parse(dto.getRentalEnd()));
+        return reservation;
     }
 
 }

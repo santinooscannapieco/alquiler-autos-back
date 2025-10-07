@@ -48,12 +48,12 @@ public class CarReservationController {
     */
     // Chequear si está bien que USER pueda ejecutar esta petición sin filtros
     @PostMapping
-    @PreAuthorize("#carReservationDTO.user_id == authentication.principal.id or hasRole('ADMIN')")
+    @PreAuthorize("#carReservationDTO.userId == authentication.principal.id or hasRole('ADMIN')")
     public ResponseEntity<CarReservationDTO> save(@RequestBody CarReservationDTO carReservationDTO) throws ResourceNotFoundException {
         ResponseEntity<CarReservationDTO> response;
 
-        if (iCarService.findById(carReservationDTO.getCar_id()).isPresent()
-                && iUserService.findById(carReservationDTO.getUser_id()).isPresent()) {
+        if (iCarService.findById(carReservationDTO.getCarId()).isPresent()
+                && iUserService.findById(carReservationDTO.getUserId()).isPresent()) {
             response = ResponseEntity.ok(iCarReservationService.save(carReservationDTO));
         } else {
             response = ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -66,12 +66,12 @@ public class CarReservationController {
     //  - si cambia fecha (chequear si el auto está disponible)
     // Chequear si está bien que USER pueda ejecutar esta petición sin filtros
     @PutMapping
-    @PreAuthorize("#carReservationDTO.user_id == authentication.principal.id or hasRole('ADMIN')")
+    @PreAuthorize("#carReservationDTO.userId == authentication.principal.id or hasRole('ADMIN')")
     public ResponseEntity<CarReservationDTO> update(@RequestBody CarReservationDTO carReservationDTO) throws Exception {
         ResponseEntity<CarReservationDTO> response;
 
-        if(iCarService.findById(carReservationDTO.getCar_id()).isPresent()
-                && iUserService.findById(carReservationDTO.getUser_id()).isPresent()) {
+        if(iCarService.findById(carReservationDTO.getCarId()).isPresent()
+                && iUserService.findById(carReservationDTO.getUserId()).isPresent()) {
 
             response = ResponseEntity.ok(iCarReservationService.update(carReservationDTO));
         } else {
@@ -107,10 +107,6 @@ public class CarReservationController {
         return ResponseEntity.ok(iCarReservationService.findAll());
     }
 
-
-
-
-
     // Crear una petición para consultar todas las reservas
     // hechas por un usuario específico
 //    @PreAuthorize("#user_id == authentication.principal.id or hasRole('ADMIN')")
@@ -119,7 +115,7 @@ public class CarReservationController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = iUserRepository.findByEmail(authentication.getName()).orElseThrow();
 
-        return ResponseEntity.ok(iCarReservationService.findByUserId(userId,currentUser));
+        return ResponseEntity.ok(iCarReservationService.findByUserId(userId, currentUser));
     }
 
     /*
