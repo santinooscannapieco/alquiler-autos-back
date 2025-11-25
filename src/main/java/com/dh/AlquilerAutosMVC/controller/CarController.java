@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -89,5 +90,14 @@ public class CarController {
             throw new Exception("No se encontró un auto con el nombre: " + name);
         }
         return ResponseEntity.ok(carList);
+    }
+
+    @GetMapping("/disponible")
+    public ResponseEntity<List<CarDTO>> getAvailableCars(@RequestParam String startDate, @RequestParam String endDate) {
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+
+        List<CarDTO> availableCars = iCarService.findAvailableCars(start, end);
+        return ResponseEntity.ok(availableCars);
     }
 }

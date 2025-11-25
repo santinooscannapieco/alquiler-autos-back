@@ -1,6 +1,8 @@
 package com.dh.AlquilerAutosMVC.controller;
 
+import com.dh.AlquilerAutosMVC.dto.CarReservationCreateDTO;
 import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
+import com.dh.AlquilerAutosMVC.dto.CarReservationUpdateDTO;
 import com.dh.AlquilerAutosMVC.entity.User;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.repository.IUserRepository;
@@ -37,24 +39,14 @@ public class CarReservationController {
         this.iUserRepository = iUserRepository;
     }
 
-    // TODO: AGREGAR
-    //  - por qué no se podría guardar el turno
-    //     . ej: si el auto no está disponible en esa fecha
-    //       hay que chequear en getCarReservations
-    /*
-    Optional<Car> car = iCarService.findById(carReservationDTO.getCar_id());
-    car.get().getCarReservations()
-    // Preguntar si tiene reservas esos días
-    */
-    // Chequear si está bien que USER pueda ejecutar esta petición sin filtros
     @PostMapping
-    @PreAuthorize("#carReservationDTO.userId == authentication.principal.id or hasRole('ADMIN')")
-    public ResponseEntity<CarReservationDTO> save(@RequestBody CarReservationDTO carReservationDTO) throws ResourceNotFoundException {
+    @PreAuthorize("#createDto.userId == authentication.principal.id or hasRole('ADMIN')")
+    public ResponseEntity<CarReservationDTO> save(@RequestBody CarReservationCreateDTO createDto) throws ResourceNotFoundException {
         ResponseEntity<CarReservationDTO> response;
 
-        if (iCarService.findById(carReservationDTO.getCarId()).isPresent()
-                && iUserService.findById(carReservationDTO.getUserId()).isPresent()) {
-            response = ResponseEntity.ok(iCarReservationService.save(carReservationDTO));
+        if (iCarService.findById(createDto.getCarId()).isPresent()
+                && iUserService.findById(createDto.getUserId()).isPresent()) {
+            response = ResponseEntity.ok(iCarReservationService.save(createDto));
         } else {
             response = ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
@@ -66,14 +58,14 @@ public class CarReservationController {
     //  - si cambia fecha (chequear si el auto está disponible)
     // Chequear si está bien que USER pueda ejecutar esta petición sin filtros
     @PutMapping
-    @PreAuthorize("#carReservationDTO.userId == authentication.principal.id or hasRole('ADMIN')")
-    public ResponseEntity<CarReservationDTO> update(@RequestBody CarReservationDTO carReservationDTO) throws Exception {
+    @PreAuthorize("#dto.userId == authentication.principal.id or hasRole('ADMIN')")
+    public ResponseEntity<CarReservationDTO> update(@RequestBody CarReservationUpdateDTO dto) throws Exception {
         ResponseEntity<CarReservationDTO> response;
 
-        if(iCarService.findById(carReservationDTO.getCarId()).isPresent()
-                && iUserService.findById(carReservationDTO.getUserId()).isPresent()) {
+        if(iCarService.findById(dto.getCarId()).isPresent()
+                && iUserService.findById(dto.getUserId()).isPresent()) {
 
-            response = ResponseEntity.ok(iCarReservationService.update(carReservationDTO));
+            response = ResponseEntity.ok(iCarReservationService.update(dto));
         } else {
             response = ResponseEntity.badRequest().build();
         }
@@ -100,16 +92,12 @@ public class CarReservationController {
         return ResponseEntity.ok(carReservationDTOToLookFor.get());
     }
 
-    // Endpoint consulto todas las reservas
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<List<CarReservationDTO>> findAll() {
         return ResponseEntity.ok(iCarReservationService.findAll());
     }
 
-    // Crear una petición para consultar todas las reservas
-    // hechas por un usuario específico
-//    @PreAuthorize("#user_id == authentication.principal.id or hasRole('ADMIN')")
     @GetMapping("/usuarios/{id}")
     public ResponseEntity<List<CarReservationDTO>> findByUserId(@PathVariable("id") Long userId) throws AccessDeniedException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -118,20 +106,11 @@ public class CarReservationController {
         return ResponseEntity.ok(iCarReservationService.findByUserId(userId, currentUser));
     }
 
-    /*
+
     @GetMapping("/auto/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<List<CarReservationDTO>> findByCarId(@PathVariable Long car_id) {
-        List<CarReservationDTO> carReservationList = iCarReservationService.findAll();
-        List<CarReservationDTO> carReservationListToReturn = null;
-
-        for (CarReservationDTO carReservationDTO : carReservationList) {
-            if (carReservationDTO.getUser_id() == car_id) {
-                carReservationListToReturn.add(carReservationDTO);
-            }
-        }
-
-        return ResponseEntity.ok(carReservationListToReturn);
-    }*/
+    public ResponseEntity<List<CarReservationDTO>> findByCarId(@PathVariable("id") Long carId) {
+        return ResponseEntity.ok(iCarReservationService.findByCarId(carId));
+    }
 
 }

@@ -60,7 +60,7 @@ public class Category {
                 .map(Car::getId)
                 .collect(Collectors.toList());
 
-        dto.setCars_id(carIds);
+        dto.setCarsId(carIds);
         return dto;
     }
 }

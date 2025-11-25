@@ -78,7 +78,6 @@ public class UserServiceImpl implements IUserService {
     }
 
     // TODO: AGREGAR
-    //  - Cambiar de role(solo lo puede hacer el ADMIN)
     //  - Buscar por nombre o apellido
 
 }

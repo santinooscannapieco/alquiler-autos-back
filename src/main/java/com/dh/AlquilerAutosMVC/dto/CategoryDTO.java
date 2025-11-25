@@ -9,5 +9,5 @@ import java.util.List;
 public class CategoryDTO {
     private Long id;
     private String name;
-    private List<Long> cars_id = new ArrayList<>();
+    private List<Long> carsId = new ArrayList<>();
 }

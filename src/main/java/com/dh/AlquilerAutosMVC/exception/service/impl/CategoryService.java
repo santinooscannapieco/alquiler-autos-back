@@ -32,7 +32,7 @@ public class CategoryService implements ICategoryService {
         Category category = new Category();
         category.setName(categoryDTO.getName());
 
-        List<Car> carList = getCarsFromIds(categoryDTO.getCars_id());
+        List<Car> carList = getCarsFromIds(categoryDTO.getCarsId());
         category.setCars(carList);
 
         categoryRepository.save(category);
@@ -47,7 +47,7 @@ public class CategoryService implements ICategoryService {
 
         category.setName(categoryDTO.getName());
 
-        List<Car> carList = getCarsFromIds(categoryDTO.getCars_id());
+        List<Car> carList = getCarsFromIds(categoryDTO.getCarsId());
         category.setCars(carList);
 
         categoryRepository.save(category);
@@ -102,7 +102,6 @@ public class CategoryService implements ICategoryService {
     @Override
     public Optional<CategoryDTO> findByName(String name) throws ResourceNotFoundException {
         Optional<Category> categoryToLookFor = categoryRepository.findByName(name);
-        Optional<CategoryDTO> categoryDTO = null;
 
         if (categoryToLookFor.isPresent()) {
             Category category = categoryToLookFor.get();
@@ -110,17 +109,17 @@ public class CategoryService implements ICategoryService {
             CategoryDTO categoryDTOToReturn = new CategoryDTO();
             categoryDTOToReturn.setId(category.getId());
             categoryDTOToReturn.setName(category.getName());
-            // Instanciar la lista a devolver
+
+
             List<Long> cars_id_ToReturn = new ArrayList<>();
-            // Recorro lista de entidades auto y la paso a lista de ids
             for (Car car : category.getCars()) {
                 cars_id_ToReturn.add(car.getId());
             }
-            categoryDTOToReturn.setCars_id(cars_id_ToReturn);
+            categoryDTOToReturn.setCarsId(cars_id_ToReturn);
 
-            categoryDTO = Optional.of(categoryDTOToReturn);
+            return Optional.of(categoryDTOToReturn);
         }
-        return categoryDTO;
+        return Optional.empty();
 
 
 

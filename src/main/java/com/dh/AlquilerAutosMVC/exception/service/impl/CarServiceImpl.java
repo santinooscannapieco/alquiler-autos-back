@@ -3,12 +3,13 @@ package com.dh.AlquilerAutosMVC.exception.service.impl;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.dh.AlquilerAutosMVC.dto.CarDTO;
-import com.dh.AlquilerAutosMVC.dto.DateRangeDTO;
+import com.dh.AlquilerAutosMVC.entity.CarReservation;
 import com.dh.AlquilerAutosMVC.entity.Category;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.repository.ICarRepository;
 
 import com.dh.AlquilerAutosMVC.entity.Car;
+import com.dh.AlquilerAutosMVC.repository.ICarReservationRepository;
 import com.dh.AlquilerAutosMVC.repository.ICategoryRepository;
 import com.dh.AlquilerAutosMVC.exception.service.ICarService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,14 +26,16 @@ public class CarServiceImpl implements ICarService {
 
     private final ICarRepository carRepository;
     private final ICategoryRepository categoryRepository;
+    private final ICarReservationRepository carReservationRepository;
 
     @Autowired
     private Cloudinary cloudinary;
 
     @Autowired
-    public CarServiceImpl(ICarRepository carRepository, ICategoryRepository categoryRepository) {
+    public CarServiceImpl(ICarRepository carRepository, ICategoryRepository categoryRepository, ICarReservationRepository carReservationRepository) {
         this.carRepository = carRepository;
         this.categoryRepository = categoryRepository;
+        this.carReservationRepository = carReservationRepository;
     }
 
     private List<String> uploadImages(MultipartFile[] images) {
@@ -52,7 +56,7 @@ public class CarServiceImpl implements ICarService {
 
     @Override
     public CarDTO save(CarDTO carDTO, MultipartFile[] images) {
-        Category category = categoryRepository.findById(carDTO.getCategory_id())
+        Category category = categoryRepository.findById(carDTO.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
         Car car = Car.fromDTO(carDTO, category);
@@ -79,12 +83,12 @@ public class CarServiceImpl implements ICarService {
         car.setName(carDTO.getName());
         car.setDescription(carDTO.getDescription());
         car.setCarBrand(carDTO.getCarBrand());
-        car.setPricePerHour(carDTO.getPricePerHour());
+        car.setPricePerDay(carDTO.getPricePerDay());
         car.setCharacteristics(carDTO.getCharacteristics());
         car.setImagePaths(carDTO.getImagePaths());
 
-        if (carDTO.getCategory_id() != null) {
-            Category category = categoryRepository.findById(carDTO.getCategory_id())
+        if (carDTO.getCategoryId() != null) {
+            Category category = categoryRepository.findById(carDTO.getCategoryId())
                     .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
             car.setCategory(category);
         }
@@ -133,10 +137,32 @@ public class CarServiceImpl implements ICarService {
                 .collect(Collectors.toList());
     }
 
+    public boolean isCarAvailable(Long carId, LocalDate start, LocalDate end, Long excludeReservationId) {
+        List<CarReservation> reservations = carReservationRepository.findByCarId(carId);
+
+        for (CarReservation r : reservations) {
+            if (excludeReservationId != null && r.getId().equals(excludeReservationId)) continue;
+
+            if (!(end.isBefore(r.getRentalStart()) || start.isAfter(r.getRentalEnd()))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public List<CarDTO> findAvailableCars(LocalDate startDate, LocalDate endDate) {
+        List<Car> allCars = carRepository.findAll();
+
+        return allCars.stream()
+                .filter(car -> isCarAvailable(car.getId(), startDate, endDate, null))
+                .map(Car::toDTO)
+                .toList();
+    }
+
 
     // TODO: AGREGAR
-    //  - (LISTO)Buscar por CarBrand (Traer lista de autos)
-    //  - (LISTO)Buscar por nombre de auto (POSIBLE: Autocompletar lo q va escribiendo)
-    //  - Buscar por precio por hora (Traer lista de autos)
+    //  - Buscar por precio por día (Traer lista de autos)
 
 }

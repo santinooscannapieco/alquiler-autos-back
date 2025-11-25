@@ -26,8 +26,8 @@ public class Car {
     private List<String> imagePaths = new ArrayList<>();
     @Column(name = "card_brand")
     private String carBrand;
-    @Column(name = "price_per_hour")
-    private Integer pricePerHour;
+    @Column(name = "price_per_day")
+    private Integer pricePerDay;
 
     @Column(name = "characteristics")
     private List<String> characteristics;
@@ -43,13 +43,13 @@ public class Car {
     public Car() {
     }
 
-    public Car(Long id, String name, String description, List<String> imagePaths, String carBrand, Integer pricePerHour, List<String> characteristics, Category category, List<CarReservation> carReservations) {
+    public Car(Long id, String name, String description, List<String> imagePaths, String carBrand, Integer pricePerDay, List<String> characteristics, Category category, List<CarReservation> carReservations) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.imagePaths = imagePaths;
         this.carBrand = carBrand;
-        this.pricePerHour = pricePerHour;
+        this.pricePerDay = pricePerDay;
         this.characteristics = characteristics;
         this.category = category;
         this.carReservations = carReservations;
@@ -95,12 +95,12 @@ public class Car {
         this.carBrand = carBrand;
     }
 
-    public Integer getPricePerHour() {
-        return pricePerHour;
+    public Integer getPricePerDay() {
+        return pricePerDay;
     }
 
-    public void setPricePerHour(Integer pricePerHour) {
-        this.pricePerHour = pricePerHour;
+    public void setPricePerDay(Integer pricePerDay) {
+        this.pricePerDay = pricePerDay;
     }
 
     public List<String> getCharacteristics() {
@@ -134,10 +134,10 @@ public class Car {
         car.setDescription(dto.getDescription());
         car.setImagePaths(dto.getImagePaths());
         car.setCarBrand(dto.getCarBrand());
-        car.setPricePerHour(dto.getPricePerHour());
+        car.setPricePerDay(dto.getPricePerDay());
         car.setCharacteristics(dto.getCharacteristics());
 
-        if (dto.getCategory_id() == null) {
+        if (dto.getCategoryId() == null) {
             throw new IllegalArgumentException("El ID de categoría no puede ser null");
         }
 
@@ -153,9 +153,9 @@ public class Car {
         dto.setDescription(this.description);
         dto.setImagePaths(this.imagePaths);
         dto.setCarBrand(this.carBrand);
-        dto.setPricePerHour(this.pricePerHour);
+        dto.setPricePerDay(this.pricePerDay);
         dto.setCharacteristics(this.characteristics);
-        dto.setCategory_id(this.getCategory() != null ? this.getCategory().getId() : null);
+        dto.setCategoryId(this.getCategory() != null ? this.getCategory().getId() : null);
 
         // Agregamos los rangos de fechas ocupadas
         List<DateRangeDTO> reservedDates = this.getCarReservations().stream()

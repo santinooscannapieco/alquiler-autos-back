@@ -12,8 +12,8 @@ public class CarDTO {
     private String description;
     private List<String> imagePaths;
     private String carBrand;
-    private Integer pricePerHour;
+    private Integer pricePerDay;
     private List<String> characteristics;
-    private Long category_id;
+    private Long categoryId;
     private List<DateRangeDTO> reservedDates = new ArrayList<>();
 }

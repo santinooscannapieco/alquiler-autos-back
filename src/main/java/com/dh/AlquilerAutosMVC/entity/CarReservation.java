@@ -1,9 +1,12 @@
 package com.dh.AlquilerAutosMVC.entity;
 
+import com.dh.AlquilerAutosMVC.dto.CarReservationCreateDTO;
 import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "carReservations")
@@ -19,31 +22,40 @@ public class CarReservation {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    @Column(name = "pick_up")
-    private String pickUp;
+    @ElementCollection
+    @CollectionTable(
+            name = "car_reservation_pickup",
+            joinColumns = @JoinColumn(name = "car_reservation_id")
+    )
+    @Column(name = "pickup_item")
+    private List<String> pickUp = new ArrayList<>();
     @Column(name = "return_start_date")
     private LocalDate rentalStart;
     @Column(name = "return_end_date")
     private LocalDate rentalEnd;
+    @Column(name = "total_price")
+    private Double totalPrice;
 
     public CarReservation() {
     }
 
-    public CarReservation(Long id, Car car, User user, String pickUp, LocalDate rentalStart, LocalDate rentalEnd) {
+    public CarReservation(Long id, Car car, User user, List<String> pickUp, LocalDate rentalStart, LocalDate rentalEnd, Double totalPrice) {
         this.id = id;
         this.car = car;
         this.user = user;
         this.pickUp = pickUp;
         this.rentalStart = rentalStart;
         this.rentalEnd = rentalEnd;
+        this.totalPrice = totalPrice;
     }
 
-    public CarReservation(Car car, User user, String pickUp, LocalDate rentalStart, LocalDate rentalEnd) {
+    public CarReservation(Car car, User user, List<String> pickUp, LocalDate rentalStart, LocalDate rentalEnd, Double totalPrice) {
         this.car = car;
         this.user = user;
         this.pickUp = pickUp;
         this.rentalStart = rentalStart;
         this.rentalEnd = rentalEnd;
+        this.totalPrice = totalPrice;
     }
 
     public Long getId() {
@@ -70,11 +82,11 @@ public class CarReservation {
         this.user = user;
     }
 
-    public String getPickUp() {
+    public List<String> getPickUp() {
         return pickUp;
     }
 
-    public void setPickUp(String pickUp) {
+    public void setPickUp(List<String> pickUp) {
         this.pickUp = pickUp;
     }
 
@@ -94,25 +106,35 @@ public class CarReservation {
         this.rentalEnd = rentalEnd;
     }
 
+    public Double getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(Double totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
     public CarReservationDTO toDTO() {
         CarReservationDTO dto = new CarReservationDTO();
         dto.setId(this.id);
-        dto.setCarId(this.car.getId());
+        dto.setCar(this.car.toDTO());
         dto.setUserId(this.user.getId());
         dto.setPickUp(this.pickUp);
         dto.setRentalStart(this.rentalStart.toString());
         dto.setRentalEnd(this.rentalEnd.toString());
+        dto.setTotalPrice(this.totalPrice);
         return dto;
     }
 
-    public static CarReservation fromDTO(CarReservationDTO dto, Car car, User user) {
+    public static CarReservation fromDTO(CarReservationCreateDTO createDTO, Car car, User user, Double totalPrice) {
         CarReservation reservation = new CarReservation();
-        reservation.setId(dto.getId());
+        reservation.setId(createDTO.getId());
         reservation.setCar(car);
         reservation.setUser(user);
-        reservation.setPickUp(dto.getPickUp());
-        reservation.setRentalStart(LocalDate.parse(dto.getRentalStart()));
-        reservation.setRentalEnd(LocalDate.parse(dto.getRentalEnd()));
+        reservation.setPickUp(createDTO.getPickUp());
+        reservation.setRentalStart(LocalDate.parse(createDTO.getRentalStart()));
+        reservation.setRentalEnd(LocalDate.parse(createDTO.getRentalEnd()));
+        reservation.setTotalPrice(totalPrice);
         return reservation;
     }
 

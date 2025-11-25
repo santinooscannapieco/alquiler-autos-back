@@ -26,7 +26,7 @@ public class CategoryController {
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<CategoryDTO> save(@RequestBody CategoryDTO categoryDTO) throws ResourceNotFoundException {
 
-        if (iCategoryService.findByName(categoryDTO.getName()) == null) {
+        if (iCategoryService.findByName(categoryDTO.getName()).isEmpty()) {
             return ResponseEntity.ok(iCategoryService.save(categoryDTO));
         } else {
             throw new ResourceNotFoundException("No se puede guardar, ya existe una categoría con el nombre: " + categoryDTO.getName());

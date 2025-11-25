@@ -4,6 +4,7 @@ import com.dh.AlquilerAutosMVC.dto.CarDTO;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,5 +17,6 @@ public interface ICarService {
     List<CarDTO> findAll();
     List<CarDTO> findByCarBrand(String carBrand) throws Exception;
     List<CarDTO> findByName(String name) throws Exception;
+    List<CarDTO> findAvailableCars(LocalDate startDate, LocalDate endDate);
 
 }
