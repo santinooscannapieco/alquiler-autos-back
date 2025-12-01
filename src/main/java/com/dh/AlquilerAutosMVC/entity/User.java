@@ -1,6 +1,5 @@
 package com.dh.AlquilerAutosMVC.entity;
 
-import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
 import com.dh.AlquilerAutosMVC.dto.UserDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,9 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
@@ -39,6 +36,11 @@ public class User implements UserDetails  {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @ElementCollection
+    @CollectionTable(name = "user_favorite_car_ids", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "car_id")
+    private Set<Long> favoriteCarIds = new HashSet<>();
 
     @OneToMany(mappedBy = "user")
     private List<CarReservation> carReservations = new ArrayList<>();
@@ -81,6 +83,7 @@ public class User implements UserDetails  {
         dto.setLastName(this.lastName);
         dto.setEmail(this.email);
         dto.setRole(this.role);
+        dto.setFavoriteCarIds(this.favoriteCarIds);
 
         if (this.carReservations != null) {
             dto.setCarReservations(
@@ -101,6 +104,7 @@ public class User implements UserDetails  {
         user.setLastName(dto.getLastName());
         user.setEmail(dto.getEmail());
         user.setRole(dto.getRole());
+        user.setFavoriteCarIds(dto.getFavoriteCarIds());
 
         user.setCarReservations(reservations);
 

@@ -23,10 +23,6 @@ public class CarReservation {
     @JoinColumn(name = "user_id")
     private User user;
     @ElementCollection
-    @CollectionTable(
-            name = "car_reservation_pickup",
-            joinColumns = @JoinColumn(name = "car_reservation_id")
-    )
     @Column(name = "pickup_item")
     private List<String> pickUp = new ArrayList<>();
     @Column(name = "return_start_date")

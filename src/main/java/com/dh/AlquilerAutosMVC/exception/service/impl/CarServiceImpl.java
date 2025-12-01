@@ -5,6 +5,7 @@ import com.cloudinary.utils.ObjectUtils;
 import com.dh.AlquilerAutosMVC.dto.CarDTO;
 import com.dh.AlquilerAutosMVC.entity.CarReservation;
 import com.dh.AlquilerAutosMVC.entity.Category;
+import com.dh.AlquilerAutosMVC.exception.CarUnavailableException;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.repository.ICarRepository;
 
@@ -56,6 +57,11 @@ public class CarServiceImpl implements ICarService {
 
     @Override
     public CarDTO save(CarDTO carDTO, MultipartFile[] images) {
+        boolean available = isCarNameAvailable(carDTO.getName(), null);
+        if (!available) {
+            throw new CarUnavailableException("El nombre del auto ya está en uso");
+        }
+
         Category category = categoryRepository.findById(carDTO.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
@@ -77,6 +83,11 @@ public class CarServiceImpl implements ICarService {
 
     @Override
     public CarDTO update(CarDTO carDTO, MultipartFile[] images) {
+        boolean available = isCarNameAvailable(carDTO.getName(), carDTO.getId());
+        if (!available) {
+            throw new CarUnavailableException("El nombre del auto ya está en uso");
+        }
+
         Car car = carRepository.findById(carDTO.getId())
                 .orElseThrow(() -> new RuntimeException("Auto no encontrado"));
 
@@ -159,6 +170,17 @@ public class CarServiceImpl implements ICarService {
                 .filter(car -> isCarAvailable(car.getId(), startDate, endDate, null))
                 .map(Car::toDTO)
                 .toList();
+    }
+
+    public boolean isCarNameAvailable(String name, Long excludeCarId) {
+        List<Car> allCars = carRepository.findAll();
+
+        for (Car car : allCars) {
+            if (car.getId().equals(excludeCarId)) continue;
+
+            if (car.getName().equals(name)) return false;
+        }
+        return true;
     }
 
 

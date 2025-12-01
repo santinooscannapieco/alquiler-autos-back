@@ -1,5 +1,8 @@
 package com.dh.AlquilerAutosMVC.config;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,23 +42,54 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         jwt = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwt);
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+        try {
+            userEmail = jwtService.extractUsername(jwt);
+        } catch (ExpiredJwtException e) {
+            sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "TOKEN_EXPIRED");
+            return;
+        } catch (SignatureException | MalformedJwtException e) {
+            sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "INVALID_TOKEN");
+            return;
+        } catch (Exception e) {
+            sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "BAD_TOKEN");
+            return;
+        }
+
+        if (userEmail == null) {
+            sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "BAD_TOKEN");
+            return;
+        }
+
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
-            if (jwtService.isTokenValid(jwt, userDetails)) {
+
+            if (!jwtService.isTokenValid(jwt, userDetails)) {
+                sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "INVALID_TOKEN");
+                return;
+            }
+
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
                         userDetails.getAuthorities()
                 );
+
                 authenticationToken.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
+
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            }
-            filterChain.doFilter(request, response);
         }
+
+        filterChain.doFilter(request, response);
+    }
+
+    private void sendError(HttpServletResponse response, int status, String errorCode) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\": \"" + errorCode + "\"}");
     }
 }
