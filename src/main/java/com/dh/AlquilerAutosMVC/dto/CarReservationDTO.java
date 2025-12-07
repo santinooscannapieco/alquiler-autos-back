@@ -1,5 +1,7 @@
 package com.dh.AlquilerAutosMVC.dto;
 
+import com.dh.AlquilerAutosMVC.entity.CardPaymentInfo;
+import com.dh.AlquilerAutosMVC.entity.PaymentMethod;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -14,4 +16,6 @@ public class CarReservationDTO {
     private String rentalStart;
     private String rentalEnd;
     private Double totalPrice;
+    private PaymentMethod paymentMethod;
+    private CardPaymentInfo cardPaymentInfo;
 }

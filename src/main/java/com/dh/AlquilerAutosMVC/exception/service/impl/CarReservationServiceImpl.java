@@ -3,15 +3,12 @@ package com.dh.AlquilerAutosMVC.exception.service.impl;
 import com.dh.AlquilerAutosMVC.dto.CarReservationCreateDTO;
 import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
 import com.dh.AlquilerAutosMVC.dto.CarReservationUpdateDTO;
-import com.dh.AlquilerAutosMVC.entity.Car;
-import com.dh.AlquilerAutosMVC.entity.Role;
-import com.dh.AlquilerAutosMVC.entity.User;
+import com.dh.AlquilerAutosMVC.entity.*;
 import com.dh.AlquilerAutosMVC.exception.CarUnavailableException;
 import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.exception.service.ICarReservationService;
 import com.dh.AlquilerAutosMVC.repository.ICarRepository;
 import com.dh.AlquilerAutosMVC.repository.ICarReservationRepository;
-import com.dh.AlquilerAutosMVC.entity.CarReservation;
 import com.dh.AlquilerAutosMVC.repository.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,12 +44,44 @@ public class CarReservationServiceImpl implements ICarReservationService {
         return (double) ((days + 1) * pricePerDay);
     }
 
+    public void validateCardInfo(PaymentMethod paymentMethod, CardPaymentInfo cardPaymentInfo) {
+
+        if (paymentMethod == PaymentMethod.EFECTIVO && cardPaymentInfo != null) {
+            throw new IllegalArgumentException("No se deben enviar datos de tarjeta si el pago es en efectivo.");
+        }
+
+        if (paymentMethod == PaymentMethod.TARJETA && cardPaymentInfo == null) {
+            throw new IllegalArgumentException("Debe completar los datos de la tarjeta.");
+        }
+
+        if (paymentMethod == PaymentMethod.TARJETA) {
+
+            if (cardPaymentInfo.getHolderName() == null || cardPaymentInfo.getHolderName().isBlank()) {
+                throw new IllegalArgumentException("El nombre del titular no puede estar vacío.");
+            }
+
+            if (cardPaymentInfo.getNumber() == null || cardPaymentInfo.getNumber().length() < 12) {
+                throw new IllegalArgumentException("El número de tarjeta no es válido.");
+            }
+
+            if (cardPaymentInfo.getExpiration() == null || !cardPaymentInfo.getExpiration().matches("\\d{2}/\\d{2}")) {
+                throw new IllegalArgumentException("La fecha de expiración no tiene un formato válido (MM/YY).");
+            }
+
+            if (cardPaymentInfo.getCvv() == null || cardPaymentInfo.getCvv().length() != 3) {
+                throw new IllegalArgumentException("El CVV debe tener 3 dígitos.");
+            }
+        }
+    }
+
     @Override
     public CarReservationDTO save(CarReservationCreateDTO createDto) {
         Car car = carRepository.findById(createDto.getCarId())
                 .orElseThrow(() -> new RuntimeException("Car not found"));
         User user = userRepository.findById(createDto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        validateCardInfo(createDto.getPaymentMethod(), createDto.getCardPaymentInfo());
 
         LocalDate start = LocalDate.parse(createDto.getRentalStart());
         LocalDate end = LocalDate.parse(createDto.getRentalEnd());
@@ -68,7 +97,7 @@ public class CarReservationServiceImpl implements ICarReservationService {
 
         Double totalPrice = calculatePrice(start, end, car.getPricePerDay());
 
-        CarReservation reservation = CarReservation.fromDTO(createDto, car, user, totalPrice);
+        CarReservation reservation = CarReservation.fromCreateDTO(createDto, car, user, totalPrice);
 
         CarReservation saved = carReservationRepository.save(reservation);
 
@@ -77,35 +106,35 @@ public class CarReservationServiceImpl implements ICarReservationService {
 
     @Override
     public CarReservationDTO update(CarReservationUpdateDTO dto) throws Exception {
+        CarReservation existing = carReservationRepository.findById(dto.getId())
+                .orElseThrow(() -> new Exception("Reserva no encontrada"));
 
-        if (carReservationRepository.findById(dto.getId()).isPresent()) {
-            Car car = carRepository.findById(dto.getCarId())
-                    .orElseThrow(() -> new RuntimeException("Car not found"));
-            User user = userRepository.findById(dto.getUserId())
-                    .orElseThrow(() -> new RuntimeException("Car not found"));
+        Car car = carRepository.findById(dto.getCarId())
+                .orElseThrow(() -> new RuntimeException("Car not found"));
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new RuntimeException("Car not found"));
 
-            LocalDate start = LocalDate.parse(dto.getRentalStart());
-            LocalDate end = LocalDate.parse(dto.getRentalEnd());
+        validateCardInfo(dto.getPaymentMethod(), dto.getCardPaymentInfo());
 
-            if (end.isBefore(start)) {
-                throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la de inicio");
-            }
+        LocalDate start = LocalDate.parse(dto.getRentalStart());
+        LocalDate end = LocalDate.parse(dto.getRentalEnd());
 
-            boolean available = carService.isCarAvailable(car.getId(),start, end, dto.getId());
-            if (!available) {
-                throw new CarUnavailableException("El auto no está disponible en esas fechas");
-            }
-
-            Double totalPrice = calculatePrice(start, end, car.getPricePerDay());
-
-            CarReservation reservation = CarReservation.fromDTO(dto, car, user, totalPrice);
-
-            CarReservation saved = carReservationRepository.save(reservation);
-
-            return saved.toDTO();
-        } else {
-            throw new Exception("Reserva no encontrada");
+        if (end.isBefore(start)) {
+            throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la de inicio");
         }
+
+        boolean available = carService.isCarAvailable(car.getId(),start, end, dto.getId());
+        if (!available) {
+            throw new CarUnavailableException("El auto no está disponible en esas fechas");
+        }
+
+        Double totalPrice = calculatePrice(start, end, car.getPricePerDay());
+
+        existing.applyUpdateDTO(dto, car, user, totalPrice);
+
+        CarReservation saved = carReservationRepository.save(existing);
+
+        return saved.toDTO();
     }
 
     @Override

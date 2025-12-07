@@ -2,6 +2,7 @@ package com.dh.AlquilerAutosMVC.entity;
 
 import com.dh.AlquilerAutosMVC.dto.CarReservationCreateDTO;
 import com.dh.AlquilerAutosMVC.dto.CarReservationDTO;
+import com.dh.AlquilerAutosMVC.dto.CarReservationUpdateDTO;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -32,10 +33,16 @@ public class CarReservation {
     @Column(name = "total_price")
     private Double totalPrice;
 
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+
+    @Embedded
+    private CardPaymentInfo cardPaymentInfo;
+
     public CarReservation() {
     }
 
-    public CarReservation(Long id, Car car, User user, List<String> pickUp, LocalDate rentalStart, LocalDate rentalEnd, Double totalPrice) {
+    public CarReservation(Long id, Car car, User user, List<String> pickUp, LocalDate rentalStart, LocalDate rentalEnd, Double totalPrice, PaymentMethod paymentMethod, CardPaymentInfo cardPaymentInfo) {
         this.id = id;
         this.car = car;
         this.user = user;
@@ -43,15 +50,19 @@ public class CarReservation {
         this.rentalStart = rentalStart;
         this.rentalEnd = rentalEnd;
         this.totalPrice = totalPrice;
+        this.paymentMethod = paymentMethod;
+        this.cardPaymentInfo = cardPaymentInfo;
     }
 
-    public CarReservation(Car car, User user, List<String> pickUp, LocalDate rentalStart, LocalDate rentalEnd, Double totalPrice) {
+    public CarReservation(Car car, User user, List<String> pickUp, LocalDate rentalStart, LocalDate rentalEnd, Double totalPrice, PaymentMethod paymentMethod, CardPaymentInfo cardPaymentInfo) {
         this.car = car;
         this.user = user;
         this.pickUp = pickUp;
         this.rentalStart = rentalStart;
         this.rentalEnd = rentalEnd;
         this.totalPrice = totalPrice;
+        this.paymentMethod = paymentMethod;
+        this.cardPaymentInfo = cardPaymentInfo;
     }
 
     public Long getId() {
@@ -110,6 +121,22 @@ public class CarReservation {
         this.totalPrice = totalPrice;
     }
 
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public CardPaymentInfo getCardPaymentInfo() {
+        return cardPaymentInfo;
+    }
+
+    public void setCardPaymentInfo(CardPaymentInfo cardPaymentInfo) {
+        this.cardPaymentInfo = cardPaymentInfo;
+    }
+
     public CarReservationDTO toDTO() {
         CarReservationDTO dto = new CarReservationDTO();
         dto.setId(this.id);
@@ -119,19 +146,36 @@ public class CarReservation {
         dto.setRentalStart(this.rentalStart.toString());
         dto.setRentalEnd(this.rentalEnd.toString());
         dto.setTotalPrice(this.totalPrice);
+        dto.setPaymentMethod(this.paymentMethod);
+        dto.setCardPaymentInfo(this.cardPaymentInfo);
+
         return dto;
     }
 
-    public static CarReservation fromDTO(CarReservationCreateDTO createDTO, Car car, User user, Double totalPrice) {
+    public static CarReservation fromCreateDTO(CarReservationCreateDTO createDTO, Car car, User user, Double totalPrice) {
         CarReservation reservation = new CarReservation();
-        reservation.setId(createDTO.getId());
         reservation.setCar(car);
         reservation.setUser(user);
         reservation.setPickUp(createDTO.getPickUp());
         reservation.setRentalStart(LocalDate.parse(createDTO.getRentalStart()));
         reservation.setRentalEnd(LocalDate.parse(createDTO.getRentalEnd()));
         reservation.setTotalPrice(totalPrice);
+        reservation.setPaymentMethod(createDTO.getPaymentMethod());
+        reservation.setCardPaymentInfo(createDTO.getCardPaymentInfo());
+
         return reservation;
+    }
+
+
+    public void applyUpdateDTO(CarReservationUpdateDTO dto, Car car, User user, Double totalPrice) {
+        this.setCar(car);
+        this.setUser(user);
+        this.setPickUp(dto.getPickUp());
+        this.setRentalStart(LocalDate.parse(dto.getRentalStart()));
+        this.setRentalEnd(LocalDate.parse(dto.getRentalEnd()));
+        this.setTotalPrice(totalPrice);
+        this.setPaymentMethod(dto.getPaymentMethod());
+        this.setCardPaymentInfo(dto.getCardPaymentInfo());
     }
 
 }
