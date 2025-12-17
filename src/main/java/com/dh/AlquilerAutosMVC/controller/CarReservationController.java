@@ -53,10 +53,6 @@ public class CarReservationController {
         return response;
     }
 
-    // TODO: AGREGAR
-    //  filtros de por qué no se podría actualizar
-    //  - si cambia fecha (chequear si el auto está disponible)
-    // Chequear si está bien que USER pueda ejecutar esta petición sin filtros
     @PutMapping
     @PreAuthorize("#dto.userId == authentication.principal.id or hasRole('ADMIN')")
     public ResponseEntity<CarReservationDTO> update(@RequestBody CarReservationUpdateDTO dto) throws Exception {

@@ -17,6 +17,6 @@ public interface ICarService {
     List<CarDTO> findAll();
     List<CarDTO> findByCarBrand(String carBrand) throws Exception;
     List<CarDTO> findByName(String name) throws Exception;
-    List<CarDTO> findAvailableCars(LocalDate startDate, LocalDate endDate);
-
+    List<CarDTO> findAvailableCars(LocalDate startDate, LocalDate endDate, Long excludeBookingId);
+    List<CarDTO> findWithFilters(String name, Long categoryId, LocalDate startDate, LocalDate endDate) throws Exception;
 }

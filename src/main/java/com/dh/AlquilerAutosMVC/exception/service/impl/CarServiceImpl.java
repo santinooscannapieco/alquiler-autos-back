@@ -14,6 +14,7 @@ import com.dh.AlquilerAutosMVC.repository.ICarReservationRepository;
 import com.dh.AlquilerAutosMVC.repository.ICategoryRepository;
 import com.dh.AlquilerAutosMVC.exception.service.ICarService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -119,7 +120,11 @@ public class CarServiceImpl implements ICarService {
         Optional<Car> carToLookFor = carRepository.findById(id);
 
         if (carToLookFor.isPresent()) {
-            carRepository.deleteById(id);
+            if (carToLookFor.get().getCarReservations().size() == 0) {
+                carRepository.deleteById(id);
+            } else {
+                throw new RuntimeException("No es posible eliminar un auto si tiene reservas asociadas");
+            }
         } else {
             throw new ResourceNotFoundException("No existe un auto con id: " + id);
         }
@@ -142,10 +147,16 @@ public class CarServiceImpl implements ICarService {
 
     @Override
     public List<CarDTO> findByName(String name) throws Exception {
+
+        if (name == null || name.isBlank()) {
+            return List.of();
+        }
+
         List<Car> cars = carRepository.findByNameContainingIgnoreCase(name);
+
         return cars.stream()
                 .map(Car::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public boolean isCarAvailable(Long carId, LocalDate start, LocalDate end, Long excludeReservationId) {
@@ -163,11 +174,11 @@ public class CarServiceImpl implements ICarService {
     }
 
     @Override
-    public List<CarDTO> findAvailableCars(LocalDate startDate, LocalDate endDate) {
+    public List<CarDTO> findAvailableCars(LocalDate startDate, LocalDate endDate, Long excludeBookingId) {
         List<Car> allCars = carRepository.findAll();
 
         return allCars.stream()
-                .filter(car -> isCarAvailable(car.getId(), startDate, endDate, null))
+                .filter(car -> isCarAvailable(car.getId(), startDate, endDate, excludeBookingId))
                 .map(Car::toDTO)
                 .toList();
     }
@@ -183,8 +194,40 @@ public class CarServiceImpl implements ICarService {
         return true;
     }
 
+    public List<CarDTO> findWithFilters(
+            String name,
+            Long categoryId,
+            LocalDate startDate,
+            LocalDate endDate
+    ) throws Exception {
+        List<CarDTO> cars = this.findAll();
 
-    // TODO: AGREGAR
-    //  - Buscar por precio por día (Traer lista de autos)
+        if (name != null && !name.isBlank()) {
+            String search = name.toLowerCase();
+            cars = cars.stream()
+                    .filter(car ->
+                            car.getName() != null &&
+                            car.getName().toLowerCase().contains(search)
+                    ).toList();
+        }
+
+        if (categoryId != null) {
+            cars = cars.stream()
+                    .filter(car ->
+                            car.getCategoryId() != null &&
+                            car.getCategoryId().equals(categoryId)
+                    ).toList();
+        }
+
+        if (startDate != null && endDate != null) {
+            cars = cars.stream()
+                    .filter(car ->
+                            this.isCarAvailable(car.getId(), startDate, endDate, null))
+                    .toList();
+        }
+
+        return cars;
+    }
+
 
 }

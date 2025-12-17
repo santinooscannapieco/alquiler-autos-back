@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -29,15 +30,21 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public CategoryDTO save(CategoryDTO categoryDTO) throws ResourceNotFoundException {
-        Category category = new Category();
-        category.setName(categoryDTO.getName());
 
-        List<Car> carList = getCarsFromIds(categoryDTO.getCarsId());
-        category.setCars(carList);
+        if (categoryDTO.getName() != null && !Objects.equals(categoryDTO.getName(), "")) {
+            Category category = new Category();
 
-        categoryRepository.save(category);
+            category.setName(categoryDTO.getName());
 
-        return category.toDTO();
+            List<Car> carList = getCarsFromIds(categoryDTO.getCarsId());
+            category.setCars(carList);
+
+            categoryRepository.save(category);
+
+            return category.toDTO();
+        } else {
+            throw new RuntimeException("No es posible crear una categoría con nombre vacío");
+        }
     }
 
     @Override
@@ -45,14 +52,18 @@ public class CategoryService implements ICategoryService {
         Category category = categoryRepository.findById(categoryDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró la categoría con ID: " + categoryDTO.getId()));
 
-        category.setName(categoryDTO.getName());
+        if (categoryDTO.getName() != null && !Objects.equals(categoryDTO.getName(), "")) {
+            category.setName(categoryDTO.getName());
 
-        List<Car> carList = getCarsFromIds(categoryDTO.getCarsId());
-        category.setCars(carList);
+            List<Car> carList = getCarsFromIds(categoryDTO.getCarsId());
+            category.setCars(carList);
 
-        categoryRepository.save(category);
+            categoryRepository.save(category);
 
-        return category.toDTO();
+            return category.toDTO();
+        } else {
+            throw new RuntimeException("No es posible guardar una categoría con nombre vacío");
+        }
     }
 
     private List<Car> getCarsFromIds(List<Long> carIds) throws ResourceNotFoundException {
@@ -72,11 +83,9 @@ public class CategoryService implements ICategoryService {
         Optional<Category> categoryToLookFor = categoryRepository.findById(id);
 
         if (!categoryToLookFor.isPresent()) {
-            // Si no existe ninguna categoría con ese id
             throw new RuntimeException("No se eliminó ya que no se encontró una categoría con el id: " + id);
         }
         else if (!categoryToLookFor.get().getCars().isEmpty()) {
-            // Si la categoría no está vacía
             throw new RuntimeException("No se puede eliminar la categoría porque tiene " + categoryToLookFor.get().getCars().size() + " autos asocioados");
         }
 

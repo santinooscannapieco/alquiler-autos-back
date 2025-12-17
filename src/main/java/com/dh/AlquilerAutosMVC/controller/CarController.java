@@ -6,6 +6,8 @@ import com.dh.AlquilerAutosMVC.exception.service.ICarService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,11 +42,18 @@ public class CarController {
         return ResponseEntity.ok(iCarService.save(carDTO, images));
     }
 
-    @PutMapping
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<CarDTO> update(@RequestBody CarDTO carDTO, @RequestPart(value = "images", required = false) MultipartFile[] images) {
-        CarDTO updated = iCarService.update(carDTO, images);
-        return ResponseEntity.ok(updated);
+    public ResponseEntity<CarDTO> update(
+            @PathVariable Long id,
+            @RequestPart("car") String carJson,
+            @RequestPart(value = "images", required = false) MultipartFile[] images
+    ) throws JsonProcessingException {
+
+        ObjectMapper mapper = new ObjectMapper();
+        CarDTO carDTO = mapper.readValue(carJson, CarDTO.class);
+
+        return ResponseEntity.ok(iCarService.update(carDTO, images));
     }
 
     @DeleteMapping("/{id}")
@@ -79,7 +88,6 @@ public class CarController {
         } else {
             throw new Exception("No se encontró autos con la marca: " + carBrand);
         }
-
     }
 
     @GetMapping("/nombre")
@@ -93,11 +101,40 @@ public class CarController {
     }
 
     @GetMapping("/disponible")
-    public ResponseEntity<List<CarDTO>> getAvailableCars(@RequestParam String startDate, @RequestParam String endDate) {
+    public ResponseEntity<List<CarDTO>> getAvailableCars(
+            @RequestParam String startDate,
+            @RequestParam String endDate,
+            @RequestParam(required = false) Long excludeBookingId) {
         LocalDate start = LocalDate.parse(startDate);
         LocalDate end = LocalDate.parse(endDate);
 
-        List<CarDTO> availableCars = iCarService.findAvailableCars(start, end);
+        List<CarDTO> availableCars = iCarService.findAvailableCars(start, end, excludeBookingId);
         return ResponseEntity.ok(availableCars);
+    }
+
+
+    @GetMapping("/filtros")
+    public ResponseEntity<List<CarDTO>> getAutos(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate
+    ) throws Exception {
+        LocalDate start = null;
+        LocalDate end = null;
+
+        if (startDate != null && !startDate.isBlank()) {
+            start = LocalDate.parse(startDate);
+        }
+
+        if (endDate != null && !endDate.isBlank()) {
+            end = LocalDate.parse(endDate);
+        }
+
+        List<CarDTO> cars = iCarService.findWithFilters(
+                name, categoryId, start, end
+        );
+
+        return ResponseEntity.ok(cars);
     }
 }

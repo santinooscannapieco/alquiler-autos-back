@@ -28,13 +28,15 @@ public class CarReservationServiceImpl implements ICarReservationService {
     private final IUserRepository userRepository;
 
     private final CarServiceImpl carService;
+    private final EmailService emailService;
 
     @Autowired
-    public CarReservationServiceImpl(ICarReservationRepository carReservationRepository, ICarRepository carRepository, IUserRepository userRepository, CarServiceImpl carService) {
+    public CarReservationServiceImpl(ICarReservationRepository carReservationRepository, ICarRepository carRepository, IUserRepository userRepository, CarServiceImpl carService, EmailService emailService) {
         this.carReservationRepository = carReservationRepository;
         this.carRepository = carRepository;
         this.userRepository = userRepository;
         this.carService = carService;
+        this.emailService = emailService;
     }
 
     public Double calculatePrice(LocalDate start, LocalDate end, Integer pricePerDay) {
@@ -100,6 +102,8 @@ public class CarReservationServiceImpl implements ICarReservationService {
         CarReservation reservation = CarReservation.fromCreateDTO(createDto, car, user, totalPrice);
 
         CarReservation saved = carReservationRepository.save(reservation);
+        /////////////////////////////******************////////////////////////
+        emailService.sendReservationConfirmation(saved, "create");
 
         return saved.toDTO();
     }
@@ -133,6 +137,9 @@ public class CarReservationServiceImpl implements ICarReservationService {
         existing.applyUpdateDTO(dto, car, user, totalPrice);
 
         CarReservation saved = carReservationRepository.save(existing);
+
+        emailService.sendReservationConfirmation(saved, "update");
+
 
         return saved.toDTO();
     }

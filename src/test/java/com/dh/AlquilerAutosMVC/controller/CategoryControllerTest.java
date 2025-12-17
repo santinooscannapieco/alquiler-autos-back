@@ -1,6 +1,7 @@
 package com.dh.AlquilerAutosMVC.controller;
 
 import com.dh.AlquilerAutosMVC.dto.CategoryDTO;
+import com.dh.AlquilerAutosMVC.exception.ResourceNotFoundException;
 import com.dh.AlquilerAutosMVC.exception.service.ICategoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,7 @@ class CategoryControllerTest {
     private ICategoryService iCategoryService;
 
     @BeforeEach
-    public void dataLoad() {
+    public void dataLoad() throws ResourceNotFoundException {
         CategoryDTO categoryDTO = new CategoryDTO();
         categoryDTO.setName("Confort");
         iCategoryService.save(categoryDTO);
