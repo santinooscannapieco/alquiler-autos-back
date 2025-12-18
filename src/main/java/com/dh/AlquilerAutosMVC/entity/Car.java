@@ -1,7 +1,6 @@
 package com.dh.AlquilerAutosMVC.entity;
 
 import com.dh.AlquilerAutosMVC.dto.CarDTO;
-import com.dh.AlquilerAutosMVC.dto.CategoryDTO;
 import com.dh.AlquilerAutosMVC.dto.DateRangeDTO;
 import jakarta.persistence.*;
 

@@ -35,8 +35,8 @@ build/
 # ================
 # H2 database (NO versionar)
 # ================
-*.mv.db
-*.trace.db
-*.lock.db
-*.h2.db
-/data/
+# *.mv.db
+# *.trace.db
+# *.lock.db
+# *.h2.db
+# /data/
