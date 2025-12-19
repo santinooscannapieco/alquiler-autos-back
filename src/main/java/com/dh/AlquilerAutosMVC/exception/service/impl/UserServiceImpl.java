@@ -76,8 +76,4 @@ public class UserServiceImpl implements IUserService {
         return userRepository.findByEmail(email)
                 .map(User::toDTO);
     }
-
-    // TODO: AGREGAR
-    //  - Buscar por nombre o apellido
-
 }

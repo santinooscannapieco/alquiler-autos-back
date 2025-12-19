@@ -129,12 +129,5 @@ public class CategoryService implements ICategoryService {
             return Optional.of(categoryDTOToReturn);
         }
         return Optional.empty();
-
-
-
-
-        /*else {
-            throw new ResourceNotFoundException("No se encontró categoría con el nombre: " + name);
-        }*/
     }
 }

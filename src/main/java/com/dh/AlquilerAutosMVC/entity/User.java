@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "users")
 public class User implements UserDetails  {
-// Implementar UserDetails
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -75,7 +74,6 @@ public class User implements UserDetails  {
         return true;
     }
 
-    // Convierte entidad a DTO
     public UserDTO toDTO() {
         UserDTO dto = new UserDTO();
         dto.setId(this.id);
@@ -96,7 +94,6 @@ public class User implements UserDetails  {
         return dto;
     }
 
-    // Convierte DTO a entidad (para creación/actualización)
     public static User fromDTO(UserDTO dto, List<CarReservation> reservations) {
         User user = new User();
         user.setId(dto.getId());
@@ -115,7 +112,7 @@ public class User implements UserDetails  {
         if (dto.getFirstname() != null) this.firstname = dto.getFirstname();
         if (dto.getLastName() != null) this.lastName = dto.getLastName();
         if (dto.getEmail() != null) this.email = dto.getEmail();
-        // Si llega el rol, lo actualizamos también
+
         if (canUpdateRole && dto.getRole() != null) {
             this.role = dto.getRole();
         }

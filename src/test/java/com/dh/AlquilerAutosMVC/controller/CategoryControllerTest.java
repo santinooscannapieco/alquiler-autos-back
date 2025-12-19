@@ -27,7 +27,7 @@ class CategoryControllerTest {
     @BeforeEach
     public void dataLoad() throws ResourceNotFoundException {
         CategoryDTO categoryDTO = new CategoryDTO();
-        categoryDTO.setName("Confort");
+        categoryDTO.setName("Probando");
         iCategoryService.save(categoryDTO);
     }
 
@@ -36,7 +36,7 @@ class CategoryControllerTest {
         mockMvc.perform(get("/categorias/1")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Confort"));
+                .andExpect(jsonPath("$.name").value("Probando"));
     }
 
     @Test
@@ -48,7 +48,7 @@ class CategoryControllerTest {
                         .content(categorySaved)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Premium"));
+                .andExpect(jsonPath("$.name").value("SUV"));
     }
 
 }

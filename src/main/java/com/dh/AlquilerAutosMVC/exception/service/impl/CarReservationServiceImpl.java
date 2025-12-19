@@ -102,7 +102,7 @@ public class CarReservationServiceImpl implements ICarReservationService {
         CarReservation reservation = CarReservation.fromCreateDTO(createDto, car, user, totalPrice);
 
         CarReservation saved = carReservationRepository.save(reservation);
-        /////////////////////////////******************////////////////////////
+
         emailService.sendReservationConfirmation(saved, "create");
 
         return saved.toDTO();
@@ -183,14 +183,10 @@ public class CarReservationServiceImpl implements ICarReservationService {
 
     @Override
     public List<CarReservationDTO> findAll() {
-        // Traemos las entidades de la BD
         List<CarReservation> carReservationList = carReservationRepository.findAll();
 
-        // Creamos lista vacia de reservasDTO que vamos a devolver
         List<CarReservationDTO> carReservationDTOList = new ArrayList<>();
 
-        // Recorremos la lista de entidades de reserva
-        // Para guardarlas en la nueva lista de reservas DTO
         for (CarReservation carReservation : carReservationList) {
             carReservationDTOList.add(carReservation.toDTO());
         }
